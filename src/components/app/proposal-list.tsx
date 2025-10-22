@@ -20,7 +20,7 @@ interface ProposalsListProps {
 
 export function ProposalsList({
   proposals,
-  totalCount,
+  // totalCount,
   onLoadMore,
 }: ProposalsListProps) {
   return (

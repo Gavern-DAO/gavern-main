@@ -1,4 +1,4 @@
-import { Check, MessageCircle, Send } from "lucide-react";
+import { Check, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Role } from "./dao-structure-n-roles";
 import { FaXTwitter } from "react-icons/fa6";
@@ -9,7 +9,7 @@ interface RoleCardProps {
 }
 
 export default function RoleCard({ role }: RoleCardProps) {
-  const { title, description, holder, isVacant, colorClass } = role;
+  const { title, description, holder, isVacant, } = role;
 
   return (
     <div className="flex flex-col gap-6 p-3 border border-[#F0F0F0] dark:border-[#282828B2] rounded-[5px]">

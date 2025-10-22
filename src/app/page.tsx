@@ -19,7 +19,7 @@ interface TabType {
   icon: React.ReactNode;
   iconActive: React.ReactNode;
 }
-export default function page() {
+export default function Page() {
   const tabs: TabType[] = [
     { item: "All DAOs", icon: <GridIcon />, iconActive: <GridIcon isActive /> },
     {

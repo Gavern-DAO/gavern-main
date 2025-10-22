@@ -17,7 +17,7 @@ export interface IActiveDao {
 const columns: ColumnDef<IActiveDao>[] = [
   {
     accessorKey: "daoName",
-    header: ({ header }) => {
+    header: ( ) => {
       return (
         <span className="font-normal leading-[24px] text-base text-[#4C4C4C]">
           DAO Name

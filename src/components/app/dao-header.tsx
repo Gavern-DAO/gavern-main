@@ -1,7 +1,6 @@
 import Image from "next/image";
-interface DaoHeaderProps {}
 
-export default function DaoHeader(props: DaoHeaderProps) {
+export default function DaoHeader() {
   return (
     <>
       <section className="w-full min-h-[336px] bg-white dark:bg-[#010101] mt-4 rounded-[5px] relative overflow-hidden dark:border dark:border-[#282828B2]">

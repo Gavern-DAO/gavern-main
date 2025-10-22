@@ -15,122 +15,7 @@ export interface IAllDao {
   timeLeft: string;
   image: string;
 }
-const columns: ColumnDef<IAllDao>[] = [
-  {
-    accessorKey: "daoName",
-    header: ({ header }) => {
-      return (
-        <span className="font-normal leading-[24px] text-base text-[#4C4C4C]">
-          DAO Name
-        </span>
-      );
-    },
-    cell: ({ row }) => {
-      const data = row.original;
-      const [selectedDaos, setSelectedDaos] = useState<string[]>([]);
-      const isSelected = selectedDaos.includes(data.id);
 
-      const handleCheckboxChange = (checked: boolean) => {
-        setSelectedDaos((prev) =>
-          checked ? [...prev, data.id] : prev.filter((id) => id !== data.id),
-        );
-      };
-
-      return (
-        <div className="flex items-center justify-start gap-3">
-          <div className="flex items-center justify-center gap-2.5">
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={handleCheckboxChange}
-              className="h-5 w-5 text-blue-600"
-            />
-            <Image
-              src={data.image}
-              width={48}
-              height={48}
-              alt={data.daoName}
-              className="h-full w-auto"
-            />
-            <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-[1.25rem] leading-[1.5rem]">
-              {data.daoName}
-            </h2>
-          </div>
-          <div className="flex items-center justify-center gap-1.5">
-            {data.isActive && (
-              <span className="py-1 px-2 border rounded-full gap-2 border-[#75FA7C] bg-[#00D70B1F] font-medium text-[0.75rem] text-[#00BF0A] leading-[100%]">
-                Active Proposal
-              </span>
-            )}
-            {data.timeLeft && (
-              <span className="text-[#909090] text-sm leading-[21px]">
-                {data.timeLeft}
-              </span>
-            )}
-          </div>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "daoHealth",
-    header: () => {
-      return (
-        <span className="font-normal leading-[24px] text-base text-[#4C4C4C] text-center flex items-center justify-center">
-          DAO Health
-        </span>
-      );
-    },
-    cell: ({ row }) => {
-      const health = row.original.daoHealth;
-      return (
-        <div className="flex items-center justify-center gap-1.5 text-[#101828] dark:text-[#EDEDED] font-normal text-base leading-[24px]">
-          {health === "Alive" ? (
-            <div className="aspect-square h-auto w-2 rounded-full bg-[#00AA09]"></div>
-          ) : health === "Stable" ? (
-            <div className="aspect-square h-auto w-2 rounded-full bg-[#FFC107]"></div>
-          ) : (
-            <div className="aspect-square h-auto w-2 rounded-full bg-[#D70000]"></div>
-          )}
-          {health}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "proposals",
-    header: () => {
-      return (
-        <span className="font-normal leading-[24px] text-base text-[#4C4C4C] text-center flex items-center justify-center">
-          Proposals
-        </span>
-      );
-    },
-    cell: ({ row }) => {
-      return (
-        <span className="text-center flex items-center justify-center text-[#101828] dark:text-[#EDEDED] leading-[24px] text-base">
-          {row.original.proposals}
-        </span>
-      );
-    },
-  },
-  {
-    accessorKey: "treasuryBalance",
-    header: () => {
-      return (
-        <span className="font-normal leading-[24px] text-base text-[#4C4C4C] text-center flex items-center justify-center">
-          Treasury Balance
-        </span>
-      );
-    },
-    cell: ({ row }) => {
-      return (
-        <span className="text-center flex items-center justify-center text-[#101828] dark:text-[#EDEDED] leading-[24px] text-base">
-          {row.original.treasuryBalance}
-        </span>
-      );
-    },
-  },
-];
 const allDaoData: IAllDao[] = [
   {
     id: "realms",
@@ -235,8 +120,124 @@ const allDaoData: IAllDao[] = [
 ];
 
 export default function TrackDaosTable() {
-  // const [selectedDaos, setSelectedDaos] = useState<string[]>([]);
+  const [selectedDaos, setSelectedDaos] = useState<string[]>([]);
 
+
+  const columns: ColumnDef<IAllDao>[] = [
+    {
+      accessorKey: "daoName",
+      header: () => {
+        return (
+          <span className="font-normal leading-[24px] text-base text-[#4C4C4C]">
+            DAO Name
+          </span>
+        );
+      },
+      cell: ({ row }) => {
+        const data = row.original;
+        const isSelected = selectedDaos.includes(data.id);
+
+        const handleCheckboxChange = (checked: boolean) => {
+          setSelectedDaos((prev) =>
+            checked ? [...prev, data.id] : prev.filter((id) => id !== data.id),
+          );
+        };
+
+        return (
+          <div className="flex items-center justify-start gap-3">
+            <div className="flex items-center justify-center gap-2.5">
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={handleCheckboxChange}
+                className="h-5 w-5 text-blue-600"
+              />
+              <Image
+                src={data.image}
+                width={48}
+                height={48}
+                alt={data.daoName}
+                className="h-full w-auto"
+              />
+              <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-[1.25rem] leading-[1.5rem]">
+                {data.daoName}
+              </h2>
+            </div>
+            <div className="flex items-center justify-center gap-1.5">
+              {data.isActive && (
+                <span className="py-1 px-2 border rounded-full gap-2 border-[#75FA7C] bg-[#00D70B1F] font-medium text-[0.75rem] text-[#00BF0A] leading-[100%]">
+                  Active Proposal
+                </span>
+              )}
+              {data.timeLeft && (
+                <span className="text-[#909090] text-sm leading-[21px]">
+                  {data.timeLeft}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "daoHealth",
+      header: () => {
+        return (
+          <span className="font-normal leading-[24px] text-base text-[#4C4C4C] text-center flex items-center justify-center">
+            DAO Health
+          </span>
+        );
+      },
+      cell: ({ row }) => {
+        const health = row.original.daoHealth;
+        return (
+          <div className="flex items-center justify-center gap-1.5 text-[#101828] dark:text-[#EDEDED] font-normal text-base leading-[24px]">
+            {health === "Alive" ? (
+              <div className="aspect-square h-auto w-2 rounded-full bg-[#00AA09]"></div>
+            ) : health === "Stable" ? (
+              <div className="aspect-square h-auto w-2 rounded-full bg-[#FFC107]"></div>
+            ) : (
+              <div className="aspect-square h-auto w-2 rounded-full bg-[#D70000]"></div>
+            )}
+            {health}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "proposals",
+      header: () => {
+        return (
+          <span className="font-normal leading-[24px] text-base text-[#4C4C4C] text-center flex items-center justify-center">
+            Proposals
+          </span>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <span className="text-center flex items-center justify-center text-[#101828] dark:text-[#EDEDED] leading-[24px] text-base">
+            {row.original.proposals}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "treasuryBalance",
+      header: () => {
+        return (
+          <span className="font-normal leading-[24px] text-base text-[#4C4C4C] text-center flex items-center justify-center">
+            Treasury Balance
+          </span>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <span className="text-center flex items-center justify-center text-[#101828] dark:text-[#EDEDED] leading-[24px] text-base">
+            {row.original.treasuryBalance}
+          </span>
+        );
+      },
+    },
+  ];
   return (
     <div className="lg:max-w-[1200px] mx-auto ">
       <span className="block mb-2 text-[#101828B2] dark:text-[#A1A1A1] font-normal text-base leading-[26px]">

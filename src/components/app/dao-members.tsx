@@ -1,11 +1,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
-import { type ReactElement, type ReactNode } from "react";
 import { DataTable } from "./data-table";
 import { truncateAddress } from "@/lib/utils";
 import { ArrowDown } from "lucide-react";
 
-export interface DaoMembersProps { }
 
 interface IMembers {
   memberName: string;
