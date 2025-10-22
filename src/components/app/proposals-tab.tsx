@@ -5,7 +5,6 @@ import {
   HoverCardTrigger,
   HoverCardContent,
 } from "../ui/hover-card";
-import Image from "next/image";
 import { ProposalsList } from "./proposal-list";
 import sampleProposals from "@/lib/sample-proposals";
 

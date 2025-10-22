@@ -1,7 +1,5 @@
-import { type ReactElement, type ReactNode } from "react";
+import { type ReactElement } from "react";
 import RoleCard from "./role-card";
-
-export interface DaoStructureRolesProps {}
 
 export interface Role {
   id: string;
@@ -82,9 +80,7 @@ export const rolesData: Role[] = [
   },
 ];
 
-export default function DaoStructureRoles(
-  props: Readonly<DaoStructureRolesProps>,
-): ReactElement {
+export default function DaoStructureRoles(): ReactElement {
   return (
     <div className="bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] rounded-[5px] flex flex-col gap-2 pb-6">
       <div className="w-full border-b-[0.5px] border-b-[#E7E7E7] dark:border-b-[#282828B2] p-4 gap-1">
