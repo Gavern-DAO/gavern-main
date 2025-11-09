@@ -1,19 +1,11 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
-import type { ProposalStatus } from "./proposal-status-badge";
+import { Proposal } from "@/lib/api";
 import { ProposalItem } from "./proposal-item";
-
-interface Proposal {
-  id: string;
-  status: ProposalStatus;
-  timeLeft?: string;
-  title: string;
-  publishDate: string;
-  author: string;
-}
+import { ProposalStatus } from "./proposal-status-badge";
 
 interface ProposalsListProps {
-  proposals: Proposal[];
+  proposals: Proposal[] | undefined;
   totalCount: number;
   onLoadMore?: () => void;
 }
@@ -26,14 +18,13 @@ export function ProposalsList({
   return (
     <>
       <div className="flex flex-col py-2 px-4 gap-2">
-        {proposals.map((proposal) => (
+        {proposals?.map((proposal, index) => (
           <ProposalItem
-            key={proposal.id}
-            status={proposal.status}
-            timeLeft={proposal.timeLeft}
-            title={proposal.title}
-            publishDate={proposal.publishDate}
-            author={proposal.author}
+            key={`${proposal.name}-${proposal.datePublished}-${index}`}
+            status={proposal.status as ProposalStatus}
+            title={proposal.name}
+            publishDate={new Date(proposal.datePublished).toLocaleDateString()}
+            author={proposal.creator}
           />
         ))}
       </div>

@@ -1,8 +1,10 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./data-table";
 import Image from "next/image";
 import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 
 export interface WatchlistDao {
   id: string;
@@ -14,6 +16,42 @@ export interface WatchlistDao {
   amountDetected: string;
 }
 
+const DaoImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
+  const [imageSrc, setImageSrc] = useState(src);
+
+  const handleImageError = () => {
+    setImageSrc("/dao-1.png");
+  };
+
+  return (
+    <Image
+      src={imageSrc}
+      width={48}
+      height={48}
+      alt={alt}
+      className="w-12 h-12 rounded-full object-cover"
+      unoptimized={true}
+      onError={handleImageError}
+    />
+  );
+};
+
+const EmptyState = () => {
+  return (
+    <div className="bg-white dark:bg-[#171717] space-y-8 min-h-[810px] flex flex-col items-center justify-center w-full">
+      <Image
+        src={"/Table-EmptyState.png"}
+        alt="Empty State"
+        width={552}
+        height={316}
+      />
+      <div className="flex flex-col items-center justify-center gap-3">
+        <span>You don’t have any DAOs on your Watchlist currently. </span>
+        <Button className="dark:bg-[]">Add DAOs to watchlist</Button>
+      </div>
+    </div>
+  );
+};
 const columns: ColumnDef<WatchlistDao>[] = [
   {
     accessorKey: "daoName",
@@ -26,13 +64,14 @@ const columns: ColumnDef<WatchlistDao>[] = [
       const data = row.original;
       return (
         <div className="flex items-center justify-start gap-3">
-          <Image
+          <DaoImage src={data.image} alt={data.daoName} />
+          {/* <Image
             src={data.image}
             width={48}
             height={48}
             alt={data.daoName}
             className="h-full w-auto"
-          />
+          /> */}
           <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-[1.25rem] leading-[1.5rem]">
             {data.daoName}
           </h2>
@@ -107,26 +146,26 @@ const columns: ColumnDef<WatchlistDao>[] = [
 //   { id: '10', daoName: 'Sanctum 5k Detected!', daoHealth: 'Dead', proposals: 163, treasuryBalance: '$62,000', image: '/sanctum-dao.png', amountDetected: "5k" },
 // ]
 
-const allDaoData: WatchlistDao[] = [];
+export default function WatchlistTable({
+  data,
+  onTrackMoreClick,
+}: {
+  data: WatchlistDao[];
+  onTrackMoreClick?: () => void;
+}) {
+  const router = useRouter();
 
-const EmptyState = () => {
-  return (
-    <div className="bg-white dark:bg-[#171717] space-y-8 min-h-[810px] flex flex-col items-center justify-center w-full">
-      <Image
-        src={"/Table-EmptyState.png"}
-        alt="Empty State"
-        width={552}
-        height={316}
-      />
-      <div className="flex flex-col items-center justify-center gap-3">
-        <span>You don’t have any DAOs on your Watchlist currently. </span>
-        <Button className="dark:bg-[]">Add DAOs to watchlist</Button>
-      </div>
-    </div>
-  );
-};
+  // Log when watchlist data changes
+  useEffect(() => {
+    console.log("[WatchlistTable] Data received:", data);
+    console.log("[WatchlistTable] Data length:", data.length);
+    console.log("[WatchlistTable] Data items:", data.map(d => ({ id: d.id, name: d.daoName })));
+  }, [data]);
 
-export default function WatchlistTable() {
+  const handleRowClick = (row: WatchlistDao) => {
+    router.push(`/dao/${row.id}`);
+  };
+
   return (
     <div className="lg:max-w-[1200px] mx-auto ">
       <span className="block mb-2 text-[#101828B2] dark:text-[#A1A1A1] font-normal text-base leading-[25px]">
@@ -135,18 +174,26 @@ export default function WatchlistTable() {
         are currently tracking.
       </span>
       <div className="w-full bg-white dark:bg-[#010101]  rounded-[10px] border-b-[0.5px] dark:border-[.5px] dark:border-[#282828B2] overflow-hidden">
-        <DataTable<WatchlistDao>
-          columns={columns}
-          data={allDaoData}
-          emptyState={<EmptyState />}
-        />
-        {allDaoData.length !== 0 && (
-          <div className="flex items-center justify-center p-8 text-[#101828B2] leading-[24px] text-[1.25rem]">
-            <span className="flex items-center justify-center gap-2 cursor-pointer select-none">
-              Tracked More DAOs →
-            </span>
-          </div>
-        )}
+
+        <>
+          <DataTable<WatchlistDao>
+            columns={columns}
+            data={data}
+            emptyState={<EmptyState />}
+            onRowClick={handleRowClick}
+          />
+          {data.length !== 0 && (
+            <div className="flex items-center justify-center p-8 text-[#101828B2] leading-[24px] text-[1.25rem]">
+              <span
+                onClick={onTrackMoreClick}
+                className="flex items-center justify-center gap-2 cursor-pointer select-none hover:opacity-80 transition-opacity"
+              >
+                Tracked More DAOs →
+              </span>
+            </div>
+          )}
+        </>
+
       </div>
     </div>
   );
