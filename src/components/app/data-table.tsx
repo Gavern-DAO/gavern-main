@@ -20,9 +20,10 @@ interface DataTableProps<T> {
   columns: ColumnDef<T>[];
   data: T[];
   emptyState?: React.ReactElement;
+  onRowClick?: (row: T) => void;
 }
 
-export function DataTable<T>({ columns, data, emptyState }: DataTableProps<T>) {
+export function DataTable<T>({ columns, data, emptyState, onRowClick }: DataTableProps<T>) {
   const table = useReactTable({
     data,
     columns,
@@ -64,7 +65,8 @@ export function DataTable<T>({ columns, data, emptyState }: DataTableProps<T>) {
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className="bg-white dark:bg-[#010101]"
+                className="bg-white dark:bg-[#010101] cursor-pointer hover:bg-gray-50 dark:hover:bg-[#0a0a0a] transition-colors"
+                onClick={() => onRowClick?.(row.original)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell

@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+"use client";
+import React, { useState, useEffect, useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./data-table";
 import Image from "next/image";
 import { ArrowDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { userApi } from "@/lib/api";
+import { useAuthStore } from "@/store/auth";
+import { throttle } from "lodash";
 
 export interface IAllDao {
   id: string;
@@ -12,116 +17,117 @@ export interface IAllDao {
   proposals: number;
   treasuryBalance: string;
   isActive: boolean;
-  timeLeft: string;
+  timeLeft?: string | null;
   image: string;
 }
 
-const allDaoData: IAllDao[] = [
-  {
-    id: "realms",
-    daoName: "Realms Ecosystem DAO",
-    daoHealth: "Alive",
-    proposals: 532,
-    treasuryBalance: "$180,000",
-    timeLeft: "",
-    isActive: false,
-    image: "/realms-dao.png",
-  },
-  {
-    id: "island",
-    daoName: "Island DAO",
-    daoHealth: "Alive",
-    proposals: 340,
-    treasuryBalance: "$780,000",
-    timeLeft: "",
-    isActive: false,
-    image: "/island-dao.png",
-  },
-  {
-    id: "metaplex",
-    daoName: "Metaplex DAO",
-    daoHealth: "Alive",
-    proposals: 265,
-    treasuryBalance: "$80,000",
-    timeLeft: "",
-    isActive: false,
-    image: "/metaplex-dao.png",
-  },
-  {
-    id: "epicentral",
-    daoName: "Epicentral DAO",
-    daoHealth: "Alive",
-    proposals: 74,
-    treasuryBalance: "$50,000",
-    timeLeft: "",
-    isActive: false,
-    image: "/epicentral-dao.png",
-  },
-  {
-    id: "marinade",
-    daoName: "Marinade",
-    daoHealth: "Stable",
-    proposals: 163,
-    treasuryBalance: "$62,000",
-    timeLeft: "",
-    isActive: false,
-    image: "/marinade-dao.png",
-  },
-  {
-    id: "drift",
-    daoName: "Drift Protocol",
-    daoHealth: "Stable",
-    proposals: 189,
-    treasuryBalance: "$34,000",
-    timeLeft: "",
-    isActive: false,
-    image: "/drift-dao.png",
-  },
-  {
-    id: "orca",
-    daoName: "Orca DAO",
-    daoHealth: "Dead",
-    proposals: 290,
-    treasuryBalance: "$70,000",
-    timeLeft: "",
-    isActive: false,
-    image: "/orca-dao.png",
-  },
-  {
-    id: "metadao",
-    daoName: "MetaDAO",
-    daoHealth: "Stable",
-    proposals: 163,
-    treasuryBalance: "$62,000",
-    timeLeft: "",
-    isActive: false,
-    image: "/meta-dao.png",
-  },
-  {
-    id: "flash",
-    daoName: "Flash Trade",
-    daoHealth: "Stable",
-    proposals: 163,
-    treasuryBalance: "$62,000",
-    timeLeft: "",
-    isActive: false,
-    image: "/flash-trade-dao.png",
-  },
-  {
-    id: "sanctum",
-    daoName: "Sanctum",
-    daoHealth: "Stable",
-    proposals: 163,
-    treasuryBalance: "$62,000",
-    timeLeft: "",
-    isActive: false,
-    image: "/sanctum-dao.png",
-  },
-];
+interface TrackedDao {
+  pubkey: string;
+}
 
-export default function TrackDaosTable() {
+export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
+  const { isAuthenticated } = useAuthStore();
+  const queryClient = useQueryClient();
+
+  const { data: trackedDaos, isLoading: isLoadingTrackedDaos } = useQuery({
+    queryKey: ["trackedDaos"],
+    queryFn: userApi.getTrackedDaos,
+    enabled: isAuthenticated,
+  });
+
   const [selectedDaos, setSelectedDaos] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (trackedDaos) {
+      setSelectedDaos(trackedDaos.map((dao: TrackedDao) => dao.pubkey));
+    }
+  }, [trackedDaos]);
+
+  const trackMutation = useMutation({
+    mutationFn: userApi.trackDao,
+    onSuccess: async (data, variables) => {
+      console.log("[TrackMutation] Success - Tracking DAO:", variables.pubkey);
+      console.log("[TrackMutation] Response:", data);
+
+      // Invalidate trackedDaos
+      console.log("[TrackMutation] Invalidating trackedDaos query...");
+      queryClient.invalidateQueries({ queryKey: ["trackedDaos"] });
+
+      // Wait for trackedDaos to refetch, then refetch summarizedTrackedDaos
+      // This ensures summarizedTrackedDaos uses the updated trackedDaos data
+      console.log("[TrackMutation] Refetching trackedDaos query...");
+      const trackedDaosResult = await queryClient.refetchQueries({ queryKey: ["trackedDaos"] });
+      console.log("[TrackMutation] trackedDaos refetch result:", trackedDaosResult);
+
+      // Explicitly refetch summarizedTrackedDaos to ensure watchlist updates
+      // Using exact: false to match all queries starting with "summarizedTrackedDaos"
+      console.log("[TrackMutation] Refetching summarizedTrackedDaos query...");
+      const summarizedResult = await queryClient.refetchQueries({
+        queryKey: ["summarizedTrackedDaos"],
+        exact: false
+      });
+      console.log("[TrackMutation] summarizedTrackedDaos refetch result:", summarizedResult);
+      console.log("[TrackMutation] All queries refetched");
+    },
+    onError: (error) => {
+      console.error("[TrackMutation] Error:", error);
+    },
+  });
+
+  const untrackMutation = useMutation({
+    mutationFn: userApi.untrackDao,
+    onSuccess: async (data, variables) => {
+      console.log("[UntrackMutation] Success - Untracking DAO:", variables);
+      console.log("[UntrackMutation] Response:", data);
+
+      // Invalidate trackedDaos
+      console.log("[UntrackMutation] Invalidating trackedDaos query...");
+      queryClient.invalidateQueries({ queryKey: ["trackedDaos"] });
+
+      // Wait for trackedDaos to refetch, then refetch summarizedTrackedDaos
+      // This ensures summarizedTrackedDaos uses the updated trackedDaos data
+      console.log("[UntrackMutation] Refetching trackedDaos query...");
+      const trackedDaosResult = await queryClient.refetchQueries({ queryKey: ["trackedDaos"] });
+      console.log("[UntrackMutation] trackedDaos refetch result:", trackedDaosResult);
+
+      // Explicitly refetch summarizedTrackedDaos to ensure watchlist updates
+      // Using exact: false to match all queries starting with "summarizedTrackedDaos"
+      console.log("[UntrackMutation] Refetching summarizedTrackedDaos query...");
+      const summarizedResult = await queryClient.refetchQueries({
+        queryKey: ["summarizedTrackedDaos"],
+        exact: false
+      });
+      console.log("[UntrackMutation] summarizedTrackedDaos refetch result:", summarizedResult);
+      console.log("[UntrackMutation] All queries refetched");
+    },
+    onError: (error) => {
+      console.error("[UntrackMutation] Error:", error);
+    },
+  });
+
+  const throttledTrack = useMemo(
+    () =>
+      throttle((pubkey: string) => trackMutation.mutate({ pubkey }), 1000),
+    [trackMutation]
+  );
+
+  const throttledUntrack = useMemo(
+    () => throttle((pubkey: string) => untrackMutation.mutate(pubkey), 1000),
+    [untrackMutation]
+  );
+
+  const handleCheckboxChange = (checked: boolean, daoId: string) => {
+    setSelectedDaos((prev) =>
+      checked ? [...prev, daoId] : prev.filter((id) => id !== daoId)
+    );
+    if (checked) {
+      console.log(`Tracking DAO: ${daoId}`);
+      throttledTrack(daoId);
+    } else {
+      console.log(`Untracking DAO: ${daoId}`);
+      throttledUntrack(daoId);
+    }
+  };
 
   const columns: ColumnDef<IAllDao>[] = [
     {
@@ -137,18 +143,14 @@ export default function TrackDaosTable() {
         const data = row.original;
         const isSelected = selectedDaos.includes(data.id);
 
-        const handleCheckboxChange = (checked: boolean) => {
-          setSelectedDaos((prev) =>
-            checked ? [...prev, data.id] : prev.filter((id) => id !== data.id),
-          );
-        };
-
         return (
           <div className="flex items-center justify-start gap-3">
             <div className="flex items-center justify-center gap-2.5">
               <Checkbox
                 checked={isSelected}
-                onCheckedChange={handleCheckboxChange}
+                onCheckedChange={(checked) =>
+                  handleCheckboxChange(!!checked, data.id)
+                }
                 className="h-5 w-5 text-blue-600"
               />
               <Image
@@ -156,8 +158,16 @@ export default function TrackDaosTable() {
                 width={48}
                 height={48}
                 alt={data.daoName}
-                className="h-full w-auto"
+                className="w-12 h-12 rounded-full object-cover"
+                unoptimized={true}
               />
+              {/* <Image
+                src={data.image}
+                width={48}
+                height={48}
+                alt={data.daoName}
+                className="h-full w-auto"
+              /> */}
               <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-[1.25rem] leading-[1.5rem]">
                 {data.daoName}
               </h2>
@@ -238,6 +248,15 @@ export default function TrackDaosTable() {
       },
     },
   ];
+
+  if (isAuthenticated && isLoadingTrackedDaos) {
+    return (
+      <div className="lg:max-w-[1200px] bg-white dark:bg-[#010101] mx-auto rounded-[10px] border-b-[0.5px] dark:border-[.5px] dark:border-[#282828B2] py-20 flex items-center justify-center">
+        <div className="h-8 w-8 border-4 border-gray-300 border-t-[#010101] rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="lg:max-w-[1200px] mx-auto ">
       <span className="block mb-2 text-[#101828B2] dark:text-[#A1A1A1] font-normal text-base leading-[26px]">
@@ -248,7 +267,7 @@ export default function TrackDaosTable() {
         notifications about their activity.{" "}
       </span>
       <div className="w-full bg-white dark:bg-[#010101] rounded-[10px] border-b-[0.5px] dark:border-[.5px] dark:border-[#282828B2] overflow-hidden">
-        <DataTable<IAllDao> columns={columns} data={allDaoData} />
+        <DataTable<IAllDao> columns={columns} data={data} />
         <div className="flex items-center justify-center p-8 text-[#101828B2] dark:text-[#A1A1A1] leading-[24px] text-[1.25rem]">
           <span className="flex items-center justify-center gap-2 cursor-pointer select-none">
             Load More <ArrowDown />

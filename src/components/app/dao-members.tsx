@@ -1,24 +1,25 @@
+"use client";
+
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
 import { DataTable } from "./data-table";
 import { truncateAddress } from "@/lib/utils";
-import { ArrowDown } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { MemberInfo, daosApi } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import LoadingSpinner from "../loading-spinner";
 
-
-interface IMembers {
-  memberName: string;
-  membersAddress: string;
-  isDelegator: boolean;
-  votesCast: number;
-  delegatedTokens: number;
-  proposalsCreated: number;
-  governancePower: number;
-  memberImage: string;
+interface DaoMembersProps {
+  realm: string;
+  realmOwner: string;
+  governingTokenMint: string;
+  page: number;
+  setPage: (page: number) => void;
 }
 
-const columns: ColumnDef<IMembers>[] = [
+const columns: ColumnDef<MemberInfo>[] = [
   {
-    accessorKey: "members",
+    accessorKey: "member",
     size: 353,
     header: () => (
       <div className="text-left text-[#101828B2] dark:text-[#A1A1A1] font-normal text-sm leading-[24px]">
@@ -30,19 +31,16 @@ const columns: ColumnDef<IMembers>[] = [
       return (
         <div className="flex items-center gap-2">
           <Image
-            src={data.memberImage}
-            alt={data.memberName || data.membersAddress}
+            src={"/solana.png"}
+            alt={data.member}
             width={36}
             height={36}
             className="rounded-full"
           />
           <div className="flex flex-col gap-0.5">
             <h2 className="text-[#101828] dark:text-[#EDEDED] text-sm font-medium">
-              {data.memberName}
+              {truncateAddress(data.member)}
             </h2>
-            <span className="text-[#101828B2] dark:text-[#A1A1A1] font-normal text-xs">
-              {truncateAddress(data.membersAddress)}
-            </span>
           </div>
         </div>
       );
@@ -59,7 +57,7 @@ const columns: ColumnDef<IMembers>[] = [
       const data = row.original;
       return (
         <span className="block text-center">
-          {data.isDelegator ? "Yes" : "No"}
+          {data.delegator ? "Yes" : "No"}
         </span>
       );
     },
@@ -74,18 +72,6 @@ const columns: ColumnDef<IMembers>[] = [
     cell({ row }) {
       const data = row.original;
       return <span className="block text-center">{data.votesCast}</span>;
-    },
-  },
-  {
-    accessorKey: "delegatedTokens",
-    header: () => (
-      <div className="text-center text-[#101828B2] dark:text-[#A1A1A1] font-normal text-sm leading-[24px]">
-        Delegated tokens
-      </div>
-    ),
-    cell({ row }) {
-      const data = row.original;
-      return <span className="block text-center">{data.delegatedTokens}</span>;
     },
   },
   {
@@ -109,120 +95,69 @@ const columns: ColumnDef<IMembers>[] = [
     ),
     cell({ row }) {
       const data = row.original;
-      return <span className="block text-center">{data.proposalsCreated}</span>;
+      return <span className="block text-center">{data.governancePower}</span>;
     },
   },
 ];
 
-const data: IMembers[] = [
-  {
-    memberName: "Gaverm.sol",
-    membersAddress: "C91MG..OHac",
-    isDelegator: false,
-    votesCast: 109,
-    delegatedTokens: 32,
-    proposalsCreated: 9,
-    governancePower: 60,
-    memberImage: "/solana.png", // Replace with actual image URL
-  },
-  {
-    memberName: "Gaverm.sol",
-    membersAddress: "C91MG..OHac",
-    isDelegator: false,
-    votesCast: 7,
-    delegatedTokens: 0,
-    proposalsCreated: 7,
-    governancePower: 16,
-    memberImage: "/solana.png", // Replace with actual image URL
-  },
-  {
-    memberName: "Gaverm.sol",
-    membersAddress: "C91MG..OHac",
-    isDelegator: true,
-    votesCast: 78,
-    delegatedTokens: 1,
-    proposalsCreated: 64,
-    governancePower: 87,
-    memberImage: "/solana.png", // Replace with actual image URL
-  },
-  {
-    memberName: "Gaverm.sol",
-    membersAddress: "C91MG..OHac",
-    isDelegator: true,
-    votesCast: 45,
-    delegatedTokens: 8,
-    proposalsCreated: 21,
-    governancePower: 56,
-    memberImage: "/solana.png", // Replace with actual image URL
-  },
-  {
-    memberName: "Gaverm.sol",
-    membersAddress: "C91MG..OHac",
-    isDelegator: false,
-    votesCast: 23,
-    delegatedTokens: 0,
-    proposalsCreated: 23,
-    governancePower: 77,
-    memberImage: "/solana.png", // Replace with actual image URL
-  },
-  {
-    memberName: "Gaverm.sol",
-    membersAddress: "C91MG..OHac",
-    isDelegator: false,
-    votesCast: 8,
-    delegatedTokens: 0,
-    proposalsCreated: 1,
-    governancePower: 12,
-    memberImage: "/solana.png", // Replace with actual image URL
-  },
-  {
-    memberName: "Gaverm.sol",
-    membersAddress: "C91MG..OHac",
-    isDelegator: true,
-    votesCast: 34,
-    delegatedTokens: 0,
-    proposalsCreated: 1,
-    governancePower: 41,
-    memberImage: "/solana.png", // Replace with actual image URL
-  },
-  {
-    memberName: "Gaverm.sol",
-    membersAddress: "C91MG..OHac",
-    isDelegator: true,
-    votesCast: 76,
-    delegatedTokens: 0,
-    proposalsCreated: 7,
-    governancePower: 43,
-    memberImage: "/solana.png", // Replace with actual image URL
-  },
-  {
-    memberName: "Gaverm.sol",
-    membersAddress: "C91MG..OHac",
-    isDelegator: false,
-    votesCast: 76,
-    delegatedTokens: 0,
-    proposalsCreated: 7,
-    governancePower: 43,
-    memberImage: "/solana.png", // Replace with actual image URL
-  },
-  {
-    memberName: "Gaverm.sol",
-    membersAddress: "C91MG..OHac",
-    isDelegator: false,
-    votesCast: 76,
-    delegatedTokens: 0,
-    proposalsCreated: 7,
-    governancePower: 43,
-    memberImage: "/solana.png",
-  },
-];
+export default function DaoMembers({
+  realm,
+  realmOwner,
+  governingTokenMint,
+  page,
+  setPage,
+}: DaoMembersProps) {
+  const { data: memberDetails, isLoading } = useQuery({
+    queryKey: ["memberDetails", realm, realmOwner, governingTokenMint, page],
+    queryFn: () =>
+      daosApi.getMemberInfo({
+        realm,
+        realmOwner,
+        governingTokenMint,
+        page,
+        limit: 10,
+      }),
+    enabled: !!realm && !!realmOwner && !!governingTokenMint,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-export default function DaoMembers() {
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!memberDetails || memberDetails.members.length === 0) {
+    return (
+      <div className="w-full bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] p-6 text-center text-lg font-semibold">
+        No members found.
+      </div>
+    );
+  }
+
+  const { members, pagination } = memberDetails;
+
   return (
     <div className="w-full bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2]">
-      <DataTable columns={columns} data={data} />
-      <div className="flex items-center justify-center font-medium text-sm text-[#101828] dark:text-[#EDEDED] py-4.5 px-6 gap-1 cursor-pointer">
-        Load More <ArrowDown size={16} />
+      <DataTable columns={columns} data={members} />
+      <div className="flex items-center justify-between font-medium text-sm text-[#101828] dark:text-[#EDEDED] py-4.5 px-6">
+        <button
+          onClick={() => setPage(page - 1)}
+          disabled={!pagination.hasPrevious}
+          className="flex items-center gap-1 cursor-pointer disabled:opacity-50"
+        >
+          <ArrowLeft size={16} />
+          Previous
+        </button>
+        <span>
+          Page {pagination.page} of {pagination.totalPages}
+        </span>
+        <button
+          onClick={() => setPage(page + 1)}
+          disabled={!pagination.hasNext}
+          className="flex items-center gap-1 cursor-pointer disabled:opacity-50"
+        >
+          Next
+          <ArrowRight size={16} />
+        </button>
       </div>
     </div>
   );

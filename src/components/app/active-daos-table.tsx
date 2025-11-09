@@ -1,8 +1,10 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./data-table";
 import Image from "next/image";
 import { ArrowDown } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export interface IActiveDao {
   id: string;
@@ -11,13 +13,34 @@ export interface IActiveDao {
   proposals: number;
   treasuryBalance: string;
   isActive: boolean;
-  timeLeft: string;
+  timeLeft?: string | null;
   image: string;
 }
+
+const DaoImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
+  const [imageSrc, setImageSrc] = useState(src);
+
+  const handleImageError = () => {
+    setImageSrc("/dao-1.png");
+  };
+
+  return (
+    <Image
+      src={imageSrc}
+      width={48}
+      height={48}
+      alt={alt}
+      className="w-12 h-12 rounded-full object-cover"
+      unoptimized={true}
+      onError={handleImageError}
+    />
+  );
+};
+
 const columns: ColumnDef<IActiveDao>[] = [
   {
     accessorKey: "daoName",
-    header: ( ) => {
+    header: () => {
       return (
         <span className="font-normal leading-[24px] text-base text-[#4C4C4C]">
           DAO Name
@@ -29,13 +52,7 @@ const columns: ColumnDef<IActiveDao>[] = [
       return (
         <div className="flex items-center justify-start gap-3">
           <div className="flex items-center justify-center gap-2.5">
-            <Image
-              src={data.image}
-              width={48}
-              height={48}
-              alt={data.daoName}
-              className="h-full w-auto"
-            />
+            <DaoImage src={data.image} alt={data.daoName} />
             <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-[1.25rem] leading-[1.5rem]">
               {data.daoName}
             </h2>
@@ -114,109 +131,6 @@ const columns: ColumnDef<IActiveDao>[] = [
   },
 ];
 
-const allDaoData: IActiveDao[] = [
-  {
-    id: "realms",
-    daoName: "Realms Ecosystem DAO",
-    daoHealth: "Alive",
-    proposals: 532,
-    treasuryBalance: "$180,000",
-    timeLeft: "14 hours left!",
-    isActive: true,
-    image: "/realms-dao.png",
-  },
-  {
-    id: "island",
-    daoName: "Island DAO",
-    daoHealth: "Alive",
-    proposals: 340,
-    treasuryBalance: "$780,000",
-    timeLeft: "1 day left!",
-    isActive: true,
-    image: "/island-dao.png",
-  },
-  {
-    id: "metaplex",
-    daoName: "Metaplex DAO",
-    daoHealth: "Dead",
-    proposals: 265,
-    treasuryBalance: "$80,000",
-    timeLeft: "2 days left!",
-    isActive: true,
-    image: "/metaplex-dao.png",
-  },
-  {
-    id: "epicentral",
-    daoName: "Epicentral DAO",
-    daoHealth: "Alive",
-    proposals: 74,
-    treasuryBalance: "$50,000",
-    timeLeft: "3 days left!",
-    isActive: true,
-    image: "/epicentral-dao.png",
-  },
-  {
-    id: "adrena",
-    daoName: "Adrena DAO",
-    daoHealth: "Dead",
-    proposals: 532,
-    treasuryBalance: "$180,000",
-    timeLeft: "4 days left!",
-    isActive: true,
-    image: "/adrena-dao.png",
-  },
-  {
-    id: "tensor",
-    daoName: "Tensor DAO",
-    daoHealth: "Alive",
-    proposals: 340,
-    treasuryBalance: "$780,000",
-    timeLeft: "1 week left!",
-    isActive: true,
-    image: "/tensor-dao.png",
-  },
-  {
-    id: "jito",
-    daoName: "Jito DAO",
-    daoHealth: "Alive",
-    proposals: 163,
-    treasuryBalance: "$62,000",
-    timeLeft: "4 days left!",
-    isActive: true,
-    image: "/jito-dao.png",
-  },
-  {
-    id: "meta",
-    daoName: "MetaDAO",
-    daoHealth: "Alive",
-    proposals: 163,
-    treasuryBalance: "$62,000",
-    timeLeft: "4 days left!",
-    isActive: true,
-    image: "/meta-dao.png",
-  },
-  {
-    id: "flash",
-    daoName: "Flash Trade",
-    daoHealth: "Alive",
-    proposals: 163,
-    treasuryBalance: "$62,000",
-    timeLeft: "4 days left!",
-    isActive: true,
-    image: "/flash-trade-dao.png",
-  },
-  {
-    id: "sanctum",
-    daoName: "Sanctum",
-    daoHealth: "Dead",
-    proposals: 163,
-    treasuryBalance: "$62,000",
-    timeLeft: "4 days left!",
-    isActive: true,
-    image: "/sanctum-dao.png",
-  },
-];
-
 const EmptyState = () => {
   return (
     <div className="bg-white dark:bg-[#171717] space-y-8 min-h-[810px] flex flex-col items-center justify-center w-full">
@@ -231,16 +145,22 @@ const EmptyState = () => {
   );
 };
 
-// const allDaoData: IActiveDao[] = [];
-export default function ActiveDaosTable() {
+export default function ActiveDaosTable({ data }: { data: IActiveDao[] }) {
+  const router = useRouter();
+
+  const handleRowClick = (row: IActiveDao) => {
+    router.push(`/dao/${row.id}`);
+  };
+
   return (
     <div className="lg:max-w-[1200px] bg-white dark:bg-[#010101] mx-auto rounded-[10px] border-b-[0.5px] dark:border-[0.5px] dark:border-[#282828B2] overflow-hidden">
       <DataTable<IActiveDao>
         columns={columns}
-        data={allDaoData}
+        data={data}
         emptyState={<EmptyState />}
+        onRowClick={handleRowClick}
       />
-      {allDaoData.length !== 0 && (
+      {data.length !== 0 && (
         <div className="flex items-center justify-center p-8  text-[#101828B2] dark:text-[#A1A1A1] leading-[24px] text-[1.25rem]">
           <span className="flex items-center justify-center gap-2 cursor-pointer select-none">
             Load More <ArrowDown />

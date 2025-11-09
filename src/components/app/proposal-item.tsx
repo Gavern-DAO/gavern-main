@@ -3,10 +3,10 @@ import {
   ProposalStatusBadge,
   type ProposalStatus,
 } from "./proposal-status-badge";
+import { mapProposalStatus } from "@/lib/utils";
 
 interface ProposalItemProps {
   status: ProposalStatus;
-  timeLeft?: string;
   title: string;
   publishDate: string;
   author: string;
@@ -14,7 +14,6 @@ interface ProposalItemProps {
 
 export function ProposalItem({
   status,
-  timeLeft,
   title,
   publishDate,
   author,
@@ -27,7 +26,7 @@ export function ProposalItem({
       }}
     >
       <div className="flex flex-col gap-2 flex-1">
-        <ProposalStatusBadge status={status} timeLeft={timeLeft} />
+        <ProposalStatusBadge status={mapProposalStatus(status)} />
         <h3 className="text-[#101828] dark:text-[#EDEDED] font-medium text-base leading-tight">
           {title}
         </h3>

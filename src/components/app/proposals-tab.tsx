@@ -6,9 +6,28 @@ import {
   HoverCardContent,
 } from "../ui/hover-card";
 import { ProposalsList } from "./proposal-list";
-import sampleProposals from "@/lib/sample-proposals";
+import { Proposal } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { daosApi } from "@/lib/api";
+import LoadingSpinner from "../loading-spinner";
 
-export default function ProposalsTab() {
+interface ProposalsTabProps {
+  realm: string;
+  realmOwner: string;
+}
+
+export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
+  const { data: proposals, isLoading: isLoadingProposals } = useQuery({
+    queryKey: ["proposals", realm, realmOwner],
+    queryFn: () =>
+      daosApi.getProposalsSummary({
+        realm,
+        realmOwner,
+      }),
+    enabled: !!realm && !!realmOwner,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
   const topMembers = [
     {
       rank: 1,
@@ -177,15 +196,19 @@ export default function ProposalsTab() {
         <div className="w-full border-b-[0.5px] border-b-[#E7E7E7] dark:border-b-[#282828B2] p-4 gap-1">
           <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-base leading-[100%]">
             Proposals{" "}
-            <span className="text-[#101828B2] dark:text-[#A1A1A1] font-normal text-xs">(43)</span>
+            <span className="text-[#101828B2] dark:text-[#A1A1A1] font-normal text-xs">({proposals?.length || 0})</span>
           </h2>
         </div>
         <div className="">
-          <ProposalsList
-            proposals={sampleProposals}
-            totalCount={43}
-            onLoadMore={() => console.log("Load more clicked")}
-          />
+          {isLoadingProposals ? (
+            <LoadingSpinner />
+          ) : (
+            <ProposalsList
+              proposals={proposals}
+              totalCount={proposals?.length || 0}
+              onLoadMore={() => console.log("Load more clicked")}
+            />
+          )}
         </div>
       </div>
     </div>
