@@ -10,6 +10,7 @@ import { Proposal } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { daosApi } from "@/lib/api";
 import LoadingSpinner from "../loading-spinner";
+import { ProposalsTabSkeleton } from "./skeleton-dao";
 
 interface ProposalsTabProps {
   realm: string;
@@ -201,7 +202,7 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
         </div>
         <div className="">
           {isLoadingProposals ? (
-            <LoadingSpinner />
+            <ProposalsTabSkeleton />
           ) : (
             <ProposalsList
               proposals={proposals}

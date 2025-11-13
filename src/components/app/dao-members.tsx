@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MemberInfo, daosApi } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "../loading-spinner";
+import { DaoMembersSkeleton } from "./skeleton-dao";
 
 interface DaoMembersProps {
   realm: string;
@@ -122,7 +123,7 @@ export default function DaoMembers({
   });
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <DaoMembersSkeleton />;
   }
 
   if (!memberDetails || memberDetails.members.length === 0) {

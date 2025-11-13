@@ -12,8 +12,8 @@ import DaoMembers from "@/components/app/dao-members";
 import ProposalsTab from "@/components/app/proposals-tab";
 import { useQuery } from "@tanstack/react-query";
 import { daosApi } from "@/lib/api";
-import LoadingSpinner from "@/components/loading-spinner";
 import axios from "axios";
+import { DaoHeaderSkeleton } from "@/components/app/skeleton-dao";
 
 interface MainnetDao {
   realmId: string;
@@ -84,55 +84,32 @@ export default function DaoPage() {
   const voteCount = parallelData?.voteCount;
   const memberCount = parallelData?.memberCount;
 
-  if (isLoading || isLoadingMainnetBeta || (daoData && isLoadingParallelData)) {
-    return (
-      <div className="">
-        <Navbar />
-        <div className="mt-6" />
-        <LoadingSpinner />
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!daoData) {
-    return (
-      <div className="">
-        <Navbar />
-        <div className="lg:max-w-[1200px] mx-auto flex justify-center items-center h-64 text-xl font-semibold">
-          DAO Not Found
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  const daoName = daoData.realmName;
-  const daoHealth = daoData.status === "active" ? "Alive" : "Dead";
-
   return (
     <div className="">
       <Navbar />
       <div className="lg:max-w-[1200px] mx-auto ">
-        <DaoHeader
-          daoName={daoName}
-          daoHealth={daoHealth}
-          imageUrl={daoData.imageUrl}
-          bannerImage={daoData.bannerImage}
-          proposalCount={daoData.proposalCount}
-          voteCount={voteCount ? parseInt(voteCount, 10) : undefined}
-          memberCount={memberCount ? parseInt(memberCount, 10) : undefined}
-        />
+        {!daoData || isLoadingParallelData ? (
+          <DaoHeaderSkeleton />
+        ) : (
+          <DaoHeader
+            daoName={daoData.realmName}
+            daoHealth={daoData.status === "active" ? "Alive" : "Dead"}
+            imageUrl={daoData.imageUrl}
+            bannerImage={daoData.bannerImage}
+            proposalCount={daoData.proposalCount}
+            voteCount={voteCount ? parseInt(voteCount, 10) : undefined}
+            memberCount={memberCount ? parseInt(memberCount, 10) : undefined}
+          />
+        )}
         <DaoTab
           tabs={tabs}
           activeTab={activeTab}
           onTabChange={(tab) => setActiveTab(tab)}
         />
         {activeTab === tabs[0] && <DaoStructureRoles />}
-        {/* {activeTab === tabs[1] && <ProposalsTab proposals={proposals} />} */}
-        {activeTab === tabs[1] && <ProposalsTab realm={daoData.realm} realmOwner={daoData.realmOwner} />}
-        {activeTab === tabs[2] && <Treasurytab realm={daoData.realm} realmOwner={daoData.realmOwner} />}
-        {activeTab === tabs[3] && (
+        {activeTab === tabs[1] && daoData && <ProposalsTab realm={daoData.realm} realmOwner={daoData.realmOwner} />}
+        {activeTab === tabs[2] && daoData && <Treasurytab realm={daoData.realm} realmOwner={daoData.realmOwner} />}
+        {activeTab === tabs[3] && daoData && (
           <DaoMembers
             realm={daoData.realm}
             realmOwner={daoData.realmOwner}
