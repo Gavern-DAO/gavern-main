@@ -5,6 +5,7 @@ import TryeasuryCard from "./treasury-card";
 import { daosApi } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "../loading-spinner";
+import { TreasuryTabSkeleton } from "./skeleton-dao";
 
 interface TreasurytabProps {
   realm: string;
@@ -30,7 +31,7 @@ export default function Treasurytab({ realm, realmOwner }: TreasurytabProps) {
       })) ?? [];
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <TreasuryTabSkeleton />;
   }
 
   return (

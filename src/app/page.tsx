@@ -20,6 +20,7 @@ import SuccessfulWalletModal from "@/components/app/successful-wallet-modal";
 import DaosFoundModal from "@/components/app/daos-found-modal";
 import LoadingSpinner from "@/components/loading-spinner";
 import axios from "axios";
+import SkeletonTable from "@/components/app/skeleton-table";
 
 const Navbar = dynamic(() => import("@/components/app/navbar"), { ssr: false });
 
@@ -214,23 +215,23 @@ export default function Page() {
     () =>
       Array.isArray(summarizedDaos)
         ? summarizedTrackedDaos?.map((dao) => {
-            const mainnetDao = mainnetBeta?.find(
-              (mDao: MainnetDao) => mDao.realmId === dao.realm
-            );
-            return {
-              id: dao.realm,
-              daoName: dao.realmName,
-              daoHealth: (dao.status === "active" ? "Alive" : "Dead") as
-                | "Alive"
-                | "Dead",
-              proposals: dao.proposalCount,
-              treasuryBalance: `$${Number(
-                dao.treasuryBalance
-              ).toLocaleString()}`,
-              image: mainnetDao?.ogImage ?? "/dao-1.png",
-              amountDetected: "", // This needs to be implemented
-            };
-          }) ?? []
+          const mainnetDao = mainnetBeta?.find(
+            (mDao: MainnetDao) => mDao.realmId === dao.realm
+          );
+          return {
+            id: dao.realm,
+            daoName: dao.realmName,
+            daoHealth: (dao.status === "active" ? "Alive" : "Dead") as
+              | "Alive"
+              | "Dead",
+            proposals: dao.proposalCount,
+            treasuryBalance: `$${Number(
+              dao.treasuryBalance
+            ).toLocaleString()}`,
+            image: mainnetDao?.ogImage ?? "/dao-1.png",
+            amountDetected: "", // This needs to be implemented
+          };
+        }) ?? []
         : [],
     [summarizedDaos, summarizedTrackedDaos, mainnetBeta]
   );
@@ -251,7 +252,9 @@ export default function Page() {
     }));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-0 md:space-y-4">
+      {/* <HookStateDebugger /> */}
+      {/* <SuperDebugModal /> */}
       <Navbar />
       <Tab
         tabs={tabs}
@@ -259,12 +262,14 @@ export default function Page() {
         activeTab={activeTab}
       />
 
-      {activeTab.item === tabs[0].item && (isLoadingAllDaosTab ? <LoadingSpinner /> : <AllDaosTable data={allDaosData} />)}
-      {activeTab.item === tabs[1].item && (isLoadingWatchlistTab ? <LoadingSpinner /> : <WatchlistTable data={watchlistData} onTrackMoreClick={() => setActiveTab(tabs[4])} />)}
-      {activeTab.item === tabs[2].item && (isLoadingActiveProposalsTab ? <LoadingSpinner /> : <ActiveDaosTable data={activeDaos} />)}
-      {activeTab.item === tabs[3].item && (isLoadingClosedProposalsTab ? <LoadingSpinner /> : <ClosedDaosTable data={closedDaos} />)}
-      {activeTab.item === tabs[4].item && (isLoadingTrackDaosTab ? <LoadingSpinner /> : <TrackDaosTable data={allDaosData} />)}
+      {activeTab.item === tabs[0].item && (isLoadingAllDaosTab ? <SkeletonTable /> : <AllDaosTable data={allDaosData} />)}
+      {activeTab.item === tabs[1].item && (isLoadingWatchlistTab ? <SkeletonTable /> : <WatchlistTable data={watchlistData} onTrackMoreClick={() => setActiveTab(tabs[4])} />)}
+      {activeTab.item === tabs[2].item && (isLoadingActiveProposalsTab ? <SkeletonTable /> : <ActiveDaosTable data={activeDaos} />)}
+      {activeTab.item === tabs[3].item && (isLoadingClosedProposalsTab ? <SkeletonTable /> : <ClosedDaosTable data={closedDaos} />)}
+      {activeTab.item === tabs[4].item && (isLoadingTrackDaosTab ? <SkeletonTable /> : <TrackDaosTable data={allDaosData} />)}
       <Footer />
+
+      {/* <DebugSuccessfulWalletModal /> */}
       <SuccessfulWalletModal />
       <DaosFoundModal />
 

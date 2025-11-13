@@ -12,22 +12,24 @@ export async function GET(): Promise<
   | NextResponse<{ pubkey: string; owner: string; name: string }[]>
   | NextResponse<{ message: string }>
 > {
-  try {
-    // Check if the cache file exists and is still valid
-    const stats = await fs.stat(CACHE_FILE_PATH);
-    const fileAge = Date.now() - stats.mtime.getTime();
+    try {
+        // Check if the cache file exists
+        await fs.access(CACHE_FILE_PATH);
 
-    if (fileAge < CACHE_DURATION) {
-      // Cache is valid, read and return the file
-      const fileContents = await fs.readFile(CACHE_FILE_PATH, "utf8");
-      const data = JSON.parse(fileContents);
-      return NextResponse.json(data);
+        // If it exists, check if it's still valid
+        const stats = await fs.stat(CACHE_FILE_PATH);
+        const fileAge = Date.now() - stats.mtime.getTime();
+
+        if (fileAge < CACHE_DURATION) {
+            // Cache is valid, read and return the file
+            const fileContents = await fs.readFile(CACHE_FILE_PATH, "utf8");
+            const data = JSON.parse(fileContents);
+            return NextResponse.json(data);
+        }
+    } catch (error) {
+        // An error here likely means the file doesn't exist, so we'll proceed to fetch it.
+        // We can ignore the error and continue.
     }
-  } catch (error) {
-    console.log(error);
-    // An error here likely means the file doesn't exist, so we'll proceed to fetch it.
-    // We can ignore the error and continue.
-  }
 
   // If cache is invalid or doesn't exist, fetch new data
   try {
