@@ -46,7 +46,7 @@ export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
 
   const trackMutation = useMutation({
     mutationFn: userApi.trackDao,
-    onSuccess: async (data, variables) => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["trackedDaos"] });
       await queryClient.refetchQueries({ queryKey: ["trackedDaos"] });
       await queryClient.refetchQueries({

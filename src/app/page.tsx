@@ -7,7 +7,6 @@ import GridIcon from "@/components/icons/grid-icon";
 import LockIcon from "@/components/icons/lock-icon";
 import StarIcon from "@/components/icons/star-icon";
 import React, { useEffect, useMemo, useState } from "react";
-import Footer from "@/components/app/footer";
 import WatchlistTable from "@/components/app/watchlist-table";
 import ActiveDaosTable from "@/components/app/active-daos-table";
 import ClosedDaosTable from "@/components/app/closed-daos-table";
@@ -18,7 +17,6 @@ import { daosApi, userApi } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
 import SuccessfulWalletModal from "@/components/app/successful-wallet-modal";
 import DaosFoundModal from "@/components/app/daos-found-modal";
-import LoadingSpinner from "@/components/loading-spinner";
 import axios from "axios";
 import SkeletonTable from "@/components/app/skeleton-table";
 

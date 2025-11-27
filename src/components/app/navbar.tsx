@@ -24,7 +24,7 @@ export default function Navbar() {
     publicKey
   } = useWalletAuth();
   const { setVisible } = useWalletModal();
-  const { connect, connected, disconnect, connecting, wallet } = useWallet();
+  const { connect, connected, connecting, wallet } = useWallet();
   const [isConnecting, setIsConnecting] = React.useState(false);
 
   // ✅ Track if we've already triggered auth for this connection

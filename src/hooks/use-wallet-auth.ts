@@ -40,7 +40,7 @@ export const useWalletAuth = () => {
       setSuccessfulWalletModalOpen(false);
       setDaosFoundModalOpen(true);
     },
-    onError: (e: any) => {
+    onError: (e: Error) => {
       console.log("❌ Error Fetching Daos:", e);
       console.log("🔄 Closing SuccessfulWalletModal");
       setSuccessfulWalletModalOpen(false);

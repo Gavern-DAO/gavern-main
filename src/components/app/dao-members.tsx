@@ -7,7 +7,6 @@ import { truncateAddress } from "@/lib/utils";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MemberInfo, daosApi } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-import LoadingSpinner from "../loading-spinner";
 import { DaoMembersSkeleton } from "./skeleton-dao";
 
 interface DaoMembersProps {

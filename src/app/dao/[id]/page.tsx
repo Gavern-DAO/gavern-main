@@ -29,14 +29,14 @@ export default function DaoPage() {
   const params = useParams();
   const id = params.id as string;
 
-  const { data: daoSummary, isLoading } = useQuery({
+  const { data: daoSummary } = useQuery({
     queryKey: ["daoSummary", id],
     queryFn: () => daosApi.getDaoSummaryOne(id),
     enabled: !!id,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const { data: mainnetBeta, isLoading: isLoadingMainnetBeta } = useQuery({
+  const { data: mainnetBeta } = useQuery({
     queryKey: ["mainnetBeta"],
     queryFn: async () => {
       const response = await axios.get("/mainnet-beta.json");

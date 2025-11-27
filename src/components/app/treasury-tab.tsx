@@ -4,7 +4,6 @@ import React from "react";
 import TryeasuryCard from "./treasury-card";
 import { daosApi } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-import LoadingSpinner from "../loading-spinner";
 import { TreasuryTabSkeleton } from "./skeleton-dao";
 
 interface TreasurytabProps {
