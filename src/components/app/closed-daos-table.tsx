@@ -5,6 +5,7 @@ import { DataTable } from "./data-table";
 import Image from "next/image";
 import { ArrowDown } from "lucide-react";
 import { useRouter } from "next/navigation";
+import DaoCard from "./dao-card";
 
 export interface IClosedDao {
   id: string;
@@ -153,17 +154,36 @@ export default function ClosedDaosTable({ data }: { data: IClosedDao[] }) {
   };
 
   return (
-    <div className="lg:max-w-[1200px] bg-white dark:bg-[#010101] mx-auto rounded-[10px] border-b-[0.5px] dark:border-[.5px] dark:border-[#282828B2] overflow-hidden">
-      <DataTable<IClosedDao>
-        columns={columns}
-        data={data}
-        onRowClick={handleRowClick}
-        emptyState={<EmptyState />}
-      />
-      <div className="flex items-center justify-center p-8  text-[#101828B2] dark:text-[#A1A1A1] leading-[24px] text-[1.25rem]">
-        <span className="flex items-center justify-center gap-2 cursor-pointer select-none">
-          Load More <ArrowDown />
-        </span>
+    <div>
+      <div className="hidden md:block lg:max-w-[1200px] bg-white dark:bg-[#010101] mx-auto rounded-[10px] border-b-[0.5px] dark:border-[.5px] dark:border-[#282828B2] overflow-hidden">
+        <DataTable<IClosedDao>
+          columns={columns}
+          data={data}
+          onRowClick={handleRowClick}
+          emptyState={<EmptyState />}
+        />
+        <div className="flex items-center justify-center p-8  text-[#101828B2] dark:text-[#A1A1A1] leading-[24px] text-[1.25rem]">
+          <span className="flex items-center justify-center gap-2 cursor-pointer select-none">
+            Load More <ArrowDown />
+          </span>
+        </div>
+      </div>
+
+      <div className="md:hidden space-y-4 px-4 pb-8">
+        {data.length === 0 ? (
+          <div className="text-center py-20 text-[#909090]">There’s no DAO.</div>
+        ) : (
+          data.map((dao) => (
+            <DaoCard key={dao.id} dao={dao} onClick={() => handleRowClick(dao)} showClosed/>
+          ))
+        )}
+        {data.length > 0 && (
+          <div className="flex justify-center pt-6">
+            <span className="flex items-center gap-2 text-[#101828B2] dark:text-[#A1A1A1] text-lg cursor-pointer select-none">
+              Load More <ArrowDown />
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

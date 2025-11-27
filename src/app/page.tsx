@@ -267,7 +267,7 @@ export default function Page() {
       {activeTab.item === tabs[2].item && (isLoadingActiveProposalsTab ? <SkeletonTable /> : <ActiveDaosTable data={activeDaos} />)}
       {activeTab.item === tabs[3].item && (isLoadingClosedProposalsTab ? <SkeletonTable /> : <ClosedDaosTable data={closedDaos} />)}
       {activeTab.item === tabs[4].item && (isLoadingTrackDaosTab ? <SkeletonTable /> : <TrackDaosTable data={allDaosData} />)}
-      <Footer />
+      {/* <Footer /> */}
 
       {/* <DebugSuccessfulWalletModal /> */}
       <SuccessfulWalletModal />

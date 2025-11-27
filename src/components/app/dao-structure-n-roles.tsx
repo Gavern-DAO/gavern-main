@@ -82,13 +82,13 @@ export const rolesData: Role[] = [
 
 export default function DaoStructureRoles(): ReactElement {
   return (
-    <div className="bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] rounded-[5px] flex flex-col gap-2 pb-6">
-      <div className="w-full border-b-[0.5px] border-b-[#E7E7E7] dark:border-b-[#282828B2] p-4 gap-1">
-        <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-base leading-[100%]">
+    <div className="bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] rounded-[5px] flex flex-col gap-2 pb-4 md:pb-6">
+      <div className="w-full border-b-[0.5px] border-b-[#E7E7E7] dark:border-b-[#282828B2] p-3 md:p-4 gap-1">
+        <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-sm md:text-base leading-[100%]">
           DAO Structure and Roles.
         </h2>
       </div>
-      <div className="px-4 py-2 gap-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div className="px-3 md:px-4 py-2 gap-2 md:gap-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {rolesData.map((role) => (
           <RoleCard key={role.id} role={role} />
         ))}

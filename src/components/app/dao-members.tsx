@@ -36,10 +36,10 @@ const columns: ColumnDef<MemberInfo>[] = [
             alt={data.member}
             width={36}
             height={36}
-            className="rounded-full"
+            className="rounded-full w-8 h-8 md:w-9 md:h-9"
           />
-          <div className="flex flex-col gap-0.5">
-            <h2 className="text-[#101828] dark:text-[#EDEDED] text-sm font-medium">
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <h2 className="text-[#101828] dark:text-[#EDEDED] text-xs md:text-sm font-medium truncate">
               {truncateAddress(data.member)}
             </h2>
           </div>
@@ -138,26 +138,28 @@ export default function DaoMembers({
 
   return (
     <div className="w-full bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2]">
-      <DataTable columns={columns} data={members} />
-      <div className="flex items-center justify-between font-medium text-sm text-[#101828] dark:text-[#EDEDED] py-4.5 px-6">
+      <div className="overflow-x-auto">
+        <DataTable columns={columns} data={members} />
+      </div>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 font-medium text-xs md:text-sm text-[#101828] dark:text-[#EDEDED] py-3 md:py-4.5 px-4 md:px-6">
         <button
           onClick={() => setPage(page - 1)}
           disabled={!pagination.hasPrevious}
-          className="flex items-center gap-1 cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-1 cursor-pointer disabled:opacity-50 text-xs md:text-sm"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={14} className="md:w-4 md:h-4" />
           Previous
         </button>
-        <span>
+        <span className="text-xs md:text-sm">
           Page {pagination.page} of {pagination.totalPages}
         </span>
         <button
           onClick={() => setPage(page + 1)}
           disabled={!pagination.hasNext}
-          className="flex items-center gap-1 cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-1 cursor-pointer disabled:opacity-50 text-xs md:text-sm"
         >
           Next
-          <ArrowRight size={16} />
+          <ArrowRight size={14} className="md:w-4 md:h-4" />
         </button>
       </div>
     </div>

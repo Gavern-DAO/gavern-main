@@ -24,17 +24,17 @@ export default function BlogPage() {
   return (
     <div>
       <Navbar />
-      <div className="lg:max-w-[1200px] mx-auto space-y-8 mt-24">
+      <div className="lg:max-w-[1200px] mx-auto space-y-6 md:space-y-8 mt-12 md:mt-24 px-4 md:px-6 lg:px-0">
         <div className="flex flex-col items-start gap-3">
-          <p className="bg-gradient-to-r from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-medium text-base leading-[100%]">
+          <p className="bg-gradient-to-r from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-medium text-sm md:text-base leading-[100%]">
             DAO blogs
           </p>
-          <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-[2.5rem] leading-[100%]">
+          <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-2xl md:text-3xl lg:text-[2.5rem] leading-[100%]">
             Resources and insights on Solana DAOs.
           </h2>
         </div>
 
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6 md:gap-8">
           {blogData.map(({ header, image, description, date }, index) => (
             <BlogCard
               key={index}
@@ -46,7 +46,7 @@ export default function BlogPage() {
           ))}
         </div>
 
-        <div className="flex items-center justify-center gap-2 [&>div]:rounded-full [&>div]:w-6 [&>div]:h-6 [&>div]:bg-[#909090] [&>div]:dark:bg-[#909090] [&>div:first-child]:bg-[#010101] [&>div:first-child]:dark:bg-[#EDEDED] [&>div:first-child]:w-11">
+        <div className="flex items-center justify-center gap-2 pb-4 md:pb-0 [&>div]:rounded-full [&>div]:w-6 [&>div]:h-6 [&>div]:bg-[#909090] [&>div]:dark:bg-[#909090] [&>div:first-child]:bg-[#010101] [&>div:first-child]:dark:bg-[#EDEDED] [&>div:first-child]:w-11">
           <div></div>
           <div></div>
           <div></div>
