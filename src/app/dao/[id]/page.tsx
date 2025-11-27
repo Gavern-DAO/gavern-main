@@ -29,14 +29,14 @@ export default function DaoPage() {
   const params = useParams();
   const id = params.id as string;
 
-  const { data: daoSummary, isLoading } = useQuery({
+  const { data: daoSummary } = useQuery({
     queryKey: ["daoSummary", id],
     queryFn: () => daosApi.getDaoSummaryOne(id),
     enabled: !!id,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const { data: mainnetBeta, isLoading: isLoadingMainnetBeta } = useQuery({
+  const { data: mainnetBeta } = useQuery({
     queryKey: ["mainnetBeta"],
     queryFn: async () => {
       const response = await axios.get("/mainnet-beta.json");
@@ -87,7 +87,7 @@ export default function DaoPage() {
   return (
     <div className="">
       <Navbar />
-      <div className="lg:max-w-[1200px] mx-auto ">
+      <div className="lg:max-w-[1200px] mx-auto px-4 md:px-6 lg:px-0">
         {!daoData || isLoadingParallelData ? (
           <DaoHeaderSkeleton />
         ) : (

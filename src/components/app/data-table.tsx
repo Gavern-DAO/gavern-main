@@ -32,8 +32,8 @@ export function DataTable<T>({ columns, data, emptyState, onRowClick }: DataTabl
   });
 
   return (
-    <div className="overflow-hidden">
-      <Table className="">
+    <div className="overflow-x-auto">
+      <Table className="min-w-full">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
@@ -44,7 +44,7 @@ export function DataTable<T>({ columns, data, emptyState, onRowClick }: DataTabl
                 return (
                   <TableHead
                     key={header.id}
-                    className="p-6"
+                    className="p-3 md:p-4 lg:p-6 text-xs md:text-sm"
                     style={{ width: header.getSize() }} // Apply dynamic width
                   >
                     {header.isPlaceholder
@@ -71,7 +71,7 @@ export function DataTable<T>({ columns, data, emptyState, onRowClick }: DataTabl
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
-                    className="p-6 border-[#E7E7E7] dark:border-[#282828B2] border-b-[0.5px]"
+                    className="p-3 md:p-4 lg:p-6 border-[#E7E7E7] dark:border-[#282828B2] border-b-[0.5px] text-xs md:text-sm"
                     style={{ width: cell.column.getSize() }} // Apply dynamic width
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -83,7 +83,7 @@ export function DataTable<T>({ columns, data, emptyState, onRowClick }: DataTabl
             <TableRow className="p-0">
               <TableCell colSpan={columns.length} className="p-0">
                 {emptyState || (
-                  <div className="h-24 text-center flex items-center justify-center">
+                  <div className="h-24 text-center flex items-center justify-center text-sm md:text-base">
                     No results.
                   </div>
                 )}

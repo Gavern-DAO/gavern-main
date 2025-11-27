@@ -26,7 +26,7 @@ export async function GET(): Promise<
             const data = JSON.parse(fileContents);
             return NextResponse.json(data);
         }
-    } catch (error) {
+    } catch {
         // An error here likely means the file doesn't exist, so we'll proceed to fetch it.
         // We can ignore the error and continue.
     }

@@ -1,11 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./data-table";
 import Image from "next/image";
 import { ArrowDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useIsMobile } from "@/hooks/use-mobile";
 import DaoImage from "./dao-image";
 import DaoCard from "./dao-card";
 
@@ -132,7 +131,6 @@ const EmptyState = () => {
 
 export default function AllDaosTable({ data }: { data: IAllDao[] }) {
   const router = useRouter();
-  const isMobile = useIsMobile()
 
   const handleRowClick = (row: IAllDao) => {
     router.push(`/dao/${row.id}`);

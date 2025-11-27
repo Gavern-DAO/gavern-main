@@ -17,7 +17,7 @@ export function ProposalsList({
 }: ProposalsListProps) {
   return (
     <>
-      <div className="flex flex-col py-2 px-4 gap-2">
+      <div className="flex flex-col py-2 px-3 md:px-4 gap-2">
         {proposals?.map((proposal, index) => (
           <ProposalItem
             key={`${proposal.name}-${proposal.datePublished}-${index}`}
@@ -32,10 +32,10 @@ export function ProposalsList({
       {onLoadMore && (
         <button
           onClick={onLoadMore}
-          className="w-full py-4 flex items-center justify-center gap-2 text-[#6B7280] dark:text-white text-sm font-medium transition-colors"
+          className="w-full py-3 md:py-4 flex items-center justify-center gap-2 text-[#6B7280] dark:text-white text-xs md:text-sm font-medium transition-colors"
         >
           Load More
-          <ChevronDown className="w-4 h-4" />
+          <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4" />
         </button>
       )}
     </>

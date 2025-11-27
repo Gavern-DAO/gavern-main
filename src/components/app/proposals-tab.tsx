@@ -6,10 +6,8 @@ import {
   HoverCardContent,
 } from "../ui/hover-card";
 import { ProposalsList } from "./proposal-list";
-import { Proposal } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { daosApi } from "@/lib/api";
-import LoadingSpinner from "../loading-spinner";
 import { ProposalsTabSkeleton } from "./skeleton-dao";
 
 interface ProposalsTabProps {
@@ -61,7 +59,7 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
 
   return (
     <div className="w-full bg-transparent space-y-4">
-      <div className="bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] p-4 rounded-[8px] gap-6 grid grid-cols-1 md:grid-cols-2">
+      <div className="bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] p-3 md:p-4 rounded-[8px] gap-4 md:gap-6 grid grid-cols-1 md:grid-cols-2">
         {/* Card 1 */}
         <div
           className="bg-black dark:bg-[#171717] rounded-[5px]"
@@ -72,11 +70,11 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
           <div className="pt-4 pb-3 px-4 font-medium text-sm leading-[100%] text-white dark:text-[#EDEDED] min-h-[46px] flex items-center">
             All-time voter’s turnout
           </div>
-          <div className="w-full py-6 px-3 bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] rounded-[5px] flex flex-col items-center justify-center min-h-[318px]">
+          <div className="w-full py-4 md:py-6 px-2 md:px-3 bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] rounded-[5px] flex flex-col items-center justify-center min-h-[250px] md:min-h-[318px]">
             {/* Active voters */}
             <HoverCard>
               <HoverCardTrigger asChild className="cursor-pointer">
-                <div className="aspect-square rounded-full bg-[#FECE26] h-auto w-[184px] text-black flex flex-col items-center justify-center font-medium text-[20px] leading-[100%]">
+                <div className="aspect-square rounded-full bg-[#FECE26] h-auto w-[140px] md:w-[184px] text-black flex flex-col items-center justify-center font-medium text-base md:text-[20px] leading-[100%]">
                   32
                 </div>
               </HoverCardTrigger>
@@ -105,7 +103,7 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
             {/* Inactive voters */}
             <HoverCard>
               <HoverCardTrigger asChild className="cursor-pointer">
-                <div className="aspect-square rounded-full bg-[#FE4A23] h-auto w-[124px] -mt-[62px] text-white dark:text-[#010101] flex flex-col items-center justify-center font-medium text-base leading-[100%]">
+                <div className="aspect-square rounded-full bg-[#FE4A23] h-auto w-[100px] md:w-[124px] -mt-[50px] md:-mt-[62px] text-white dark:text-[#010101] flex flex-col items-center justify-center font-medium text-sm md:text-base leading-[100%]">
                   5
                 </div>
               </HoverCardTrigger>
@@ -143,15 +141,15 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
           <div className="pt-4 pb-3 px-4 font-medium text-sm leading-[100%] text-white dark:text-[#EDEDED] min-h-[46px] flex items-center">
             Top 3 most active members
           </div>
-          <div className="w-full py-5 pb-6 bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] rounded-[5px] flex flex-col  min-h-[318px]">
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm text-left border-separate border-spacing-y-2">
+          <div className="w-full py-4 md:py-5 pb-4 md:pb-6 bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] rounded-[5px] flex flex-col min-h-[250px] md:min-h-[318px]">
+            <div className="overflow-x-auto -mx-2 md:mx-0 px-2 md:px-0">
+              <table className="min-w-full text-xs md:text-sm text-left border-separate border-spacing-y-2">
                 <thead>
-                  <tr className="text-[#101828B2] dark:text-[#A1A1A1] text-sm leading-[24px] font-normal">
-                    <th className="px-4 py-2">Delegates</th>
-                    <th className="px-4 py-2 text-center">Proposals created</th>
-                    <th className="px-4 py-2 text-center">Votes</th>
-                    <th className="px-4 py-2 text-center">Voting Power</th>
+                  <tr className="text-[#101828B2] dark:text-[#A1A1A1] text-xs md:text-sm leading-[20px] md:leading-[24px] font-normal">
+                    <th className="px-2 md:px-4 py-2">Delegates</th>
+                    <th className="px-2 md:px-4 py-2 text-center">Proposals created</th>
+                    <th className="px-2 md:px-4 py-2 text-center">Votes</th>
+                    <th className="px-2 md:px-4 py-2 text-center">Voting Power</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -160,9 +158,9 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
                       key={member.rank}
                       className="bg-[white] dark:bg-[#010101] rounded-lg hover:bg-[#F1F5F9] transition"
                     >
-                      <td className="px-4 py-3 flex items-center gap-3 whitespace-nowrap">
+                      <td className="px-2 md:px-4 py-2 md:py-3 flex items-center gap-2 md:gap-3 whitespace-nowrap">
                         <div
-                          className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center text-white dark:text-[#010101] text-xs sm:text-sm font-semibold`}
+                          className={`w-6 h-6 md:w-8 md:h-8 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center text-white dark:text-[#010101] text-xs md:text-sm font-semibold`}
                         >
                           {member.rank}
                         </div>
@@ -175,13 +173,13 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-[#101828] dark:text-[#EDEDED] font-normal text-xs sm:text-sm text-center">
+                      <td className="px-2 md:px-4 py-2 md:py-3 text-[#101828] dark:text-[#EDEDED] font-normal text-xs md:text-sm text-center">
                         {member.proposals}
                       </td>
-                      <td className="px-4 py-3 text-[#101828] dark:text-[#EDEDED] font-normal text-xs sm:text-sm text-center">
+                      <td className="px-2 md:px-4 py-2 md:py-3 text-[#101828] dark:text-[#EDEDED] font-normal text-xs md:text-sm text-center">
                         {member.votes}
                       </td>
-                      <td className="px-4 py-3 text-[#101828] dark:text-[#EDEDED] font-normal text-xs sm:text-sm text-center">
+                      <td className="px-2 md:px-4 py-2 md:py-3 text-[#101828] dark:text-[#EDEDED] font-normal text-xs md:text-sm text-center">
                         {member.power}
                       </td>
                     </tr>
@@ -194,8 +192,8 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
       </div>
 
       <div className="bg-[#FFFFFF] dark:bg-[#010101] dark:border dark:border-[#282828B2] rounded-[5px] flex flex-col gap-2">
-        <div className="w-full border-b-[0.5px] border-b-[#E7E7E7] dark:border-b-[#282828B2] p-4 gap-1">
-          <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-base leading-[100%]">
+        <div className="w-full border-b-[0.5px] border-b-[#E7E7E7] dark:border-b-[#282828B2] p-3 md:p-4 gap-1">
+          <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-sm md:text-base leading-[100%]">
             Proposals{" "}
             <span className="text-[#101828B2] dark:text-[#A1A1A1] font-normal text-xs">({proposals?.length || 0})</span>
           </h2>

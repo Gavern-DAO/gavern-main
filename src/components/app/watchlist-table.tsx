@@ -5,6 +5,7 @@ import { DataTable } from "./data-table";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import DaoCard from "./dao-card";
 
 export interface WatchlistDao {
   id: string;
@@ -36,9 +37,9 @@ const DaoImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
   );
 };
 
-const EmptyState = () => {
+export const EmptyState = () => {
   return (
-    <div className="bg-white dark:bg-[#171717] space-y-8 min-h-[810px] flex flex-col items-center justify-center w-full">
+    <div className="bg-white dark:bg-[#171717] space-y-8 min-h-[578px] md:min-h-[810px] flex flex-col items-center justify-center w-full rounded-none">
       <Image
         src={"/Table-EmptyState.png"}
         alt="Empty State"
@@ -167,15 +168,15 @@ export default function WatchlistTable({
   };
 
   return (
-    <div className="lg:max-w-[1200px] mx-auto ">
-      <span className="block mb-2 text-[#101828B2] dark:text-[#A1A1A1] font-normal text-base leading-[25px]">
+    <div className="lg:max-w-[1200px] mx-auto px-4">
+      <span className="block mb-2 text-[#101828B2] dark:text-[#A1A1A1] font-normal text-xs md:text-base leading-[17px] md:leading-[25px]">
         <span className="text-[#101828] dark:text-[#EDEDED]">Note:</span> These
         are DAOs that your wallet address was dictated in or the DAO that you
         are currently tracking.
       </span>
       <div className="w-full bg-white dark:bg-[#010101]  rounded-[10px] border-b-[0.5px] dark:border-[.5px] dark:border-[#282828B2] overflow-hidden">
 
-        <>
+        <div className="hidden md:block">
           <DataTable<WatchlistDao>
             columns={columns}
             data={data}
@@ -192,7 +193,29 @@ export default function WatchlistTable({
               </span>
             </div>
           )}
-        </>
+        </div>
+
+
+
+        <div className="md:hidden space-y-4 px-4 pb-8">
+          {data.length === 0 ? (
+            <EmptyState />
+          ) : (
+            data.map((dao) => (
+              <DaoCard key={dao.id} dao={dao} onClick={() => handleRowClick(dao)} />
+            ))
+          )}
+          {data.length !== 0 && (
+            <div className="flex items-center justify-center p-8 text-[#101828B2] leading-[24px] text-[1.25rem]">
+              <span
+                onClick={onTrackMoreClick}
+                className="flex items-center justify-center gap-2 cursor-pointer select-none hover:opacity-80 transition-opacity"
+              >
+                Tracked More DAOs →
+              </span>
+            </div>
+          )}
+        </div>
 
       </div>
     </div>
