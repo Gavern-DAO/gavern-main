@@ -39,7 +39,7 @@ export default function Tab({ tabs, onTabChange, activeTab }: IProps) {
   };
 
   return (
-    <div className="bg-white md:bg-transparent pt-4 md:pt-0 mb-4 pb-4 md:pb-0 space-y-4">
+    <div className="bg-white dark:bg-[#010101] md:bg-transparent pt-4 md:pt-0 mb-4 pb-4 md:pb-0 space-y-4">
       <Label className="md:hidden flex items-center bg-[#F7F7F7] dark:bg-[#171717] max-w-[95%] mx-auto py-2 px-4 rounded-[8px]">
         <CiSearch color="#909090" />
         <Input
@@ -54,7 +54,7 @@ export default function Tab({ tabs, onTabChange, activeTab }: IProps) {
               key={index}
               onClick={() => handleTabClick(tab)}
               className={clsx(
-                `flex items-center py-2.5 px-4 gap-2 rounded-md transition-all duration-200 cursor-pointer`,
+                `flex items-center py-2.5 px-4 gap-2 rounded-md transition-all duration-200 cursor-pointer`
               )}
             >
               {activeTab.item === tab.item ? tab.iconActive : tab.icon}
@@ -63,7 +63,7 @@ export default function Tab({ tabs, onTabChange, activeTab }: IProps) {
                   "text-sm md:text-base select-none",
                   activeTab.item === tab.item
                     ? "bg-gradient-to-r from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-medium"
-                    : "dark:text-[#A1A1A1] text-[#101828B2]",
+                    : "dark:text-[#A1A1A1] text-[#101828B2]"
                 )}
               >
                 {tab.item}
@@ -86,7 +86,8 @@ export default function Tab({ tabs, onTabChange, activeTab }: IProps) {
           <SelectContent className="bg-white dark:bg-[#010101]">
             {tabs.map((tab, index) => (
               <SelectItem key={index} value={tab.item}>
-                {tab.icon}{tab.item}
+                {tab.icon}
+                {tab.item}
               </SelectItem>
             ))}
           </SelectContent>
