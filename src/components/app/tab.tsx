@@ -101,11 +101,17 @@ export default function Tab({ tabs, onTabChange, activeTab }: IProps) {
             <SelectValue placeholder="Categories" />
           </SelectTrigger>
           <SelectContent className="bg-white dark:bg-[#010101]">
-            <SelectItem value="apple">Apple</SelectItem>
-            <SelectItem value="banana">Banana</SelectItem>
-            <SelectItem value="blueberry">Blueberry</SelectItem>
-            <SelectItem value="grapes">Grapes</SelectItem>
-            <SelectItem value="pineapple">Pineapple</SelectItem>
+            <SelectItem value="Protocol">Protocol</SelectItem>
+            <SelectItem value="Service">Service</SelectItem>
+            <SelectItem value="SocialFi">SocialFi</SelectItem>
+            <SelectItem value="Social">Social</SelectItem>
+            <SelectItem value="Grants">Grants</SelectItem>
+            <SelectItem value="Creator">Creator</SelectItem>
+            <SelectItem value="Gaming">Gaming</SelectItem>
+            <SelectItem value="DeFi">DeFi</SelectItem>
+            <SelectItem value="DePIN">DePIN</SelectItem>
+            <SelectItem value="Meme">Meme</SelectItem>
+            <SelectItem value="RWA">RWA</SelectItem>
           </SelectContent>
         </Select>
       </div>

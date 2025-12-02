@@ -1,8 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { getAuthToken, removeAuthToken } from "./cookie";
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://gavern-main-server-pdd3.onrender.com";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://gavern-main-server-pdd3.onrender.com";
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -149,10 +148,7 @@ async function apiFetch<T>(
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<{ message?: string }>;
       const apiError: ApiError = {
-        message:
-          axiosError.response?.data?.message ||
-          axiosError.message ||
-          "API Error",
+        message: axiosError.response?.data?.message || axiosError.message || "API Error",
         statusCode: axiosError.response?.status,
       };
       throw apiError;
@@ -230,13 +226,10 @@ export const authApi = {
    * POST /auth/verify-otp
    */
   verifyOtp: async (data: VerifyEmailOtpDto) => {
-    return apiFetch<{ success: boolean; verified: boolean }>(
-      "/auth/verify-otp",
-      {
-        method: "POST",
-        data: data,
-      }
-    );
+    return apiFetch<{ success: boolean; verified: boolean }>("/auth/verify-otp", {
+      method: "POST",
+      data: data,
+    });
   },
 };
 
@@ -305,12 +298,9 @@ export const userApi = {
    * GET /user/tracked
    */
   getTrackedDaos: async () => {
-    return apiFetch<{ id: string; name: string; pubkey: string }[]>(
-      "/user/tracked",
-      {
-        method: "GET",
-      }
-    );
+    return apiFetch<{ id: string; name: string; pubkey: string }[]>("/user/tracked", {
+      method: "GET",
+    });
   },
 };
 
@@ -412,12 +402,9 @@ export const daosApi = {
       realm: params.realm,
       realmOwner: params.realmOwner,
     });
-    return apiFetch<ProposalSummary>(
-      `/daos/proposals/summary?${query.toString()}`,
-      {
-        method: "GET",
-      }
-    );
+    return apiFetch<ProposalSummary>(`/daos/proposals/summary?${query.toString()}`, {
+      method: "GET",
+    });
   },
 
   /**
@@ -473,12 +460,9 @@ export const daosApi = {
       realmOwner: params.realmOwner,
       governingTokenMint: params.governingTokenMint,
     });
-    return apiFetch<UserVoteAndProposals>(
-      `/daos/vote-props?${query.toString()}`,
-      {
-        method: "GET",
-      }
-    );
+    return apiFetch<UserVoteAndProposals>(`/daos/vote-props?${query.toString()}`, {
+      method: "GET",
+    });
   },
 
   /**
@@ -535,6 +519,27 @@ export const daosApi = {
       dao: daoPubkey,
     });
     return apiFetch<DaoSummaryOne[]>(`/daos/summary-one?${query.toString()}`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Get stored roles for a DAO
+   * GET /daos/stored-roles/{daoPubkey}
+   */
+  getStoredRoles: async (daoPubkey: string) => {
+    return apiFetch<
+      {
+        id: string;
+        name: string;
+        description: string;
+        pubkey: string | null;
+        telegram: string | null;
+        discord: string | null;
+        x: string | null;
+        assignedAt: string;
+      }[]
+    >(`/daos/stored-roles/${daoPubkey}`, {
       method: "GET",
     });
   },
