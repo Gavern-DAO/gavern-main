@@ -94,7 +94,18 @@ export default function Page() {
         return [];
       }
 
-      const priorityPubkey = "F9V4Lwo49aUe8fFujMbU6uhdFyDRqKY54WpzdpncUSk9";
+      // Prioritized DAOs - these will appear at the top of the list
+      const priorityPubkeys = [
+        "F9V4Lwo49aUe8fFujMbU6uhdFyDRqKY54WpzdpncUSk9", // Island DAO
+        "6yU77XJakREaptpqFbu5azT7uzxa6RPswhpTAYX9pq1o", // DL Ecosystem Grant
+        "ConzwGtFktKLA2M7451S6jmW1tB3tRD9augz9zFA46Yr", // DL Metaplex Grant
+        "DA5G7QQbFioZ6K33wQcH8fVdgFcnaDjLD7DLQkapZg5X", // Metaplex DAO
+        "5PP7vKjJyLw1MR55LoexRsCj3CpZj9MdD6aNXRrvxG42", // EpicentralDAO
+        "3YADdZuLqfZ8ZHnxDNMnMs77qbVdhioe6yi3b4i3hfNA", // Realms Ecosystem DAO
+        "84pGFuy1Y27ApK67ApethaPvexeDWA66zNV8gm38TVeQ", // BonkDAO
+        "GWe1VYTRMujAtGVhSLwSn4YPsXBLe5qfkzNAYAKD44Nk", // AdrenaDAO
+        "4sgAydAiSvnpT73rALCcnYGhi5K2LrB9pJFAEbLMfrXt", // Tensor DAO
+      ];
 
       const userDaoPubkeys = userDaos?.result.map((dao) => dao.realmName) ?? [];
 
@@ -105,11 +116,16 @@ export default function Page() {
 
       const daoPubkeysToSummarize = prioritizedDaos.map((dao) => dao.pubkey);
 
-      // Remove priority pubkey if it exists in the list, then add it to the top
+      // Remove priority pubkeys if they exist in the list, then add them to the top
       const filteredPubkeys = daoPubkeysToSummarize.filter(
-        (pubkey) => pubkey !== priorityPubkey
+        (pubkey) => !priorityPubkeys.includes(pubkey)
       );
-      const finalPubkeysToSummarize = [priorityPubkey, ...filteredPubkeys];
+      // Ensure total is 15: priority pubkeys first, then fill remaining slots
+      const remainingSlots = 15 - priorityPubkeys.length;
+      const finalPubkeysToSummarize = [
+        ...priorityPubkeys,
+        ...filteredPubkeys.slice(0, remainingSlots),
+      ];
 
       if (finalPubkeysToSummarize.length === 0) {
         return [];
@@ -117,7 +133,29 @@ export default function Page() {
 
       const summaryData = await daosApi.getSummaryForDaos(finalPubkeysToSummarize);
       console.log("[Page] Summary data from API:", summaryData);
-      return summaryData;
+      
+      // Sort the results to ensure prioritized DAOs appear at the top
+      const sortedSummaryData = summaryData.sort((a, b) => {
+        const aIndex = priorityPubkeys.indexOf(a.realm);
+        const bIndex = priorityPubkeys.indexOf(b.realm);
+        
+        // If both are in priority list, maintain their order in priority list
+        if (aIndex !== -1 && bIndex !== -1) {
+          return aIndex - bIndex;
+        }
+        // If only a is in priority list, a comes first
+        if (aIndex !== -1) {
+          return -1;
+        }
+        // If only b is in priority list, b comes first
+        if (bIndex !== -1) {
+          return 1;
+        }
+        // If neither is in priority list, maintain original order
+        return 0;
+      });
+      
+      return sortedSummaryData;
     },
     enabled: !!allDaos,
   });
