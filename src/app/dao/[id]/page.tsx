@@ -114,6 +114,7 @@ export default function DaoPage() {
             realm={daoData.realm}
             realmOwner={daoData.realmOwner}
             governingTokenMint={daoData.communityMint}
+            councilMint={daoData.councilMint}
             page={page}
             setPage={setPage}
           />
