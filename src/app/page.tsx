@@ -22,8 +22,6 @@ import SkeletonTable from "@/components/app/skeleton-table";
 
 const Navbar = dynamic(() => import("@/components/app/navbar"), { ssr: false });
 
-
-
 interface TabType {
   item: string;
   icon: React.ReactNode;
@@ -67,14 +65,15 @@ export default function Page() {
     setMounted(true);
   }, []);
 
-
   const { data: allDaos, isLoading: isLoadingAllDaos } = useQuery({
     queryKey: ["allDaos"],
-    queryFn: async (): Promise<{
-      pubkey: string;
-      owner: string;
-      name: string;
-    }[]> => {
+    queryFn: async (): Promise<
+      {
+        pubkey: string;
+        owner: string;
+        name: string;
+      }[]
+    > => {
       const response = await axios.get("/api/daos");
       return response.data;
     },
@@ -88,32 +87,78 @@ export default function Page() {
     enabled: isAuthenticated,
   });
 
-  const { data: summarizedDaos, isLoading: isLoadingSummarizedDaos } =
-    useQuery({
-      queryKey: ["summarizedDaos", allDaos, userDaos],
-      queryFn: async () => {
-        if (!allDaos) {
-          return [];
+  const { data: summarizedDaos, isLoading: isLoadingSummarizedDaos } = useQuery({
+    queryKey: ["summarizedDaos", allDaos, userDaos],
+    queryFn: async () => {
+      if (!allDaos) {
+        return [];
+      }
+
+      // Prioritized DAOs - these will appear at the top of the list
+      const priorityPubkeys = [
+        "F9V4Lwo49aUe8fFujMbU6uhdFyDRqKY54WpzdpncUSk9", // Island DAO
+        "6yU77XJakREaptpqFbu5azT7uzxa6RPswhpTAYX9pq1o", // DL Ecosystem Grant
+        "ConzwGtFktKLA2M7451S6jmW1tB3tRD9augz9zFA46Yr", // DL Metaplex Grant
+        "DA5G7QQbFioZ6K33wQcH8fVdgFcnaDjLD7DLQkapZg5X", // Metaplex DAO
+        "5PP7vKjJyLw1MR55LoexRsCj3CpZj9MdD6aNXRrvxG42", // EpicentralDAO
+        "3YADdZuLqfZ8ZHnxDNMnMs77qbVdhioe6yi3b4i3hfNA", // Realms Ecosystem DAO
+        "84pGFuy1Y27ApK67ApethaPvexeDWA66zNV8gm38TVeQ", // BonkDAO
+        "GWe1VYTRMujAtGVhSLwSn4YPsXBLe5qfkzNAYAKD44Nk", // AdrenaDAO
+        "4sgAydAiSvnpT73rALCcnYGhi5K2LrB9pJFAEbLMfrXt", // Tensor DAO
+      ];
+
+      const userDaoPubkeys = userDaos?.result.map((dao) => dao.realmName) ?? [];
+
+      const prioritizedDaos = [
+        ...allDaos.filter((dao) => userDaoPubkeys.includes(dao.name)),
+        ...allDaos.filter((dao) => !userDaoPubkeys.includes(dao.name)),
+      ].slice(0, 15);
+
+      const daoPubkeysToSummarize = prioritizedDaos.map((dao) => dao.pubkey);
+
+      // Remove priority pubkeys if they exist in the list, then add them to the top
+      const filteredPubkeys = daoPubkeysToSummarize.filter(
+        (pubkey) => !priorityPubkeys.includes(pubkey)
+      );
+      // Ensure total is 15: priority pubkeys first, then fill remaining slots
+      const remainingSlots = 15 - priorityPubkeys.length;
+      const finalPubkeysToSummarize = [
+        ...priorityPubkeys,
+        ...filteredPubkeys.slice(0, remainingSlots),
+      ];
+
+      if (finalPubkeysToSummarize.length === 0) {
+        return [];
+      }
+
+      const summaryData = await daosApi.getSummaryForDaos(finalPubkeysToSummarize);
+      console.log("[Page] Summary data from API:", summaryData);
+      
+      // Sort the results to ensure prioritized DAOs appear at the top
+      const sortedSummaryData = summaryData.sort((a, b) => {
+        const aIndex = priorityPubkeys.indexOf(a.realm);
+        const bIndex = priorityPubkeys.indexOf(b.realm);
+        
+        // If both are in priority list, maintain their order in priority list
+        if (aIndex !== -1 && bIndex !== -1) {
+          return aIndex - bIndex;
         }
-
-        const userDaoPubkeys =
-          userDaos?.result.map((dao) => dao.realmName) ?? [];
-
-        const prioritizedDaos = [
-          ...allDaos.filter((dao) => userDaoPubkeys.includes(dao.name)),
-          ...allDaos.filter((dao) => !userDaoPubkeys.includes(dao.name)),
-        ].slice(0, 15);
-
-        const daoPubkeysToSummarize = prioritizedDaos.map((dao) => dao.pubkey);
-
-        if (daoPubkeysToSummarize.length === 0) {
-          return [];
+        // If only a is in priority list, a comes first
+        if (aIndex !== -1) {
+          return -1;
         }
-
-        return daosApi.getSummaryForDaos(daoPubkeysToSummarize);
-      },
-      enabled: !!allDaos,
-    });
+        // If only b is in priority list, b comes first
+        if (bIndex !== -1) {
+          return 1;
+        }
+        // If neither is in priority list, maintain original order
+        return 0;
+      });
+      
+      return sortedSummaryData;
+    },
+    enabled: !!allDaos,
+  });
 
   const { data: trackedDaos, isLoading: isLoadingTrackedDaos } = useQuery({
     queryKey: ["trackedDaos"],
@@ -131,7 +176,10 @@ export default function Page() {
     useQuery({
       queryKey: ["summarizedTrackedDaos", trackedDaos],
       queryFn: async () => {
-        console.log("[Page] summarizedTrackedDaos queryFn called with trackedDaos:", trackedDaos);
+        console.log(
+          "[Page] summarizedTrackedDaos queryFn called with trackedDaos:",
+          trackedDaos
+        );
         if (!trackedDaos) {
           console.log("[Page] No trackedDaos, returning empty array");
           return [];
@@ -156,7 +204,10 @@ export default function Page() {
   // Log summarizedTrackedDaos changes
   useEffect(() => {
     console.log("[Page] summarizedTrackedDaos changed:", summarizedTrackedDaos);
-    console.log("[Page] summarizedTrackedDaos isLoading:", isLoadingSummarizedTrackedDaos);
+    console.log(
+      "[Page] summarizedTrackedDaos isLoading:",
+      isLoadingSummarizedTrackedDaos
+    );
   }, [summarizedTrackedDaos, isLoadingSummarizedTrackedDaos]);
 
   const { data: mainnetBeta, isLoading: isLoadingMainnetBeta } = useQuery({
@@ -189,47 +240,41 @@ export default function Page() {
 
   const allDaosData = Array.isArray(summarizedDaos)
     ? summarizedDaos.map((dao) => {
-      const mainnetDao = mainnetBeta?.find(
-        (mDao: MainnetDao) => mDao.realmId === dao.realm
-      );
-      return {
-        id: dao.realm,
-        daoName: dao.realmName,
-        daoHealth: (dao.status === "active" ? "Alive" : "Dead") as
-          | "Alive"
-          | "Dead",
-        proposals: dao.proposalCount,
-        treasuryBalance: `$${Number(dao.treasuryBalance).toLocaleString()}`,
-        isActive: dao.activeProposal.exists,
-        timeLeft: dao.activeProposal.exists
-          ? dao.activeProposal.latest
-          : dao.closedProposal.latest,
-        image: mainnetDao?.ogImage ?? "/dao-1.png",
-      };
-    })
+        const mainnetDao = mainnetBeta?.find(
+          (mDao: MainnetDao) => mDao.realmId === dao.realm
+        );
+        return {
+          id: dao.realm,
+          daoName: dao.realmName,
+          daoHealth: (dao.status === "active" ? "Alive" : "Dead") as "Alive" | "Dead",
+          proposals: dao.proposalCount,
+          treasuryBalance: `$${Number(dao.treasuryBalance).toLocaleString()}`,
+          isActive: dao.activeProposal.exists,
+          timeLeft: dao.activeProposal.exists
+            ? dao.activeProposal.latest
+            : dao.closedProposal.latest,
+          image: mainnetDao?.ogImage ?? "/dao-1.png",
+        };
+      })
     : [];
 
   const watchlistData = useMemo(
     () =>
       Array.isArray(summarizedDaos)
         ? summarizedTrackedDaos?.map((dao) => {
-          const mainnetDao = mainnetBeta?.find(
-            (mDao: MainnetDao) => mDao.realmId === dao.realm
-          );
-          return {
-            id: dao.realm,
-            daoName: dao.realmName,
-            daoHealth: (dao.status === "active" ? "Alive" : "Dead") as
-              | "Alive"
-              | "Dead",
-            proposals: dao.proposalCount,
-            treasuryBalance: `$${Number(
-              dao.treasuryBalance
-            ).toLocaleString()}`,
-            image: mainnetDao?.ogImage ?? "/dao-1.png",
-            amountDetected: "", // This needs to be implemented
-          };
-        }) ?? []
+            const mainnetDao = mainnetBeta?.find(
+              (mDao: MainnetDao) => mDao.realmId === dao.realm
+            );
+            return {
+              id: dao.realm,
+              daoName: dao.realmName,
+              daoHealth: (dao.status === "active" ? "Alive" : "Dead") as "Alive" | "Dead",
+              proposals: dao.proposalCount,
+              treasuryBalance: `$${Number(dao.treasuryBalance).toLocaleString()}`,
+              image: mainnetDao?.ogImage ?? "/dao-1.png",
+              amountDetected: "", // This needs to be implemented
+            };
+          }) ?? []
         : [],
     [summarizedDaos, summarizedTrackedDaos, mainnetBeta]
   );
@@ -238,7 +283,10 @@ export default function Page() {
   useEffect(() => {
     console.log("[Page] watchlistData changed:", watchlistData);
     console.log("[Page] watchlistData length:", watchlistData.length);
-    console.log("[Page] summarizedTrackedDaos used for watchlist:", summarizedTrackedDaos);
+    console.log(
+      "[Page] summarizedTrackedDaos used for watchlist:",
+      summarizedTrackedDaos
+    );
   }, [watchlistData, summarizedTrackedDaos]);
 
   const activeDaos = allDaosData.filter((dao) => dao.isActive);
@@ -254,23 +302,42 @@ export default function Page() {
       {/* <HookStateDebugger /> */}
       {/* <SuperDebugModal /> */}
       <Navbar />
-      <Tab
-        tabs={tabs}
-        onTabChange={(tab) => setActiveTab(tab)}
-        activeTab={activeTab}
-      />
+      <Tab tabs={tabs} onTabChange={(tab) => setActiveTab(tab)} activeTab={activeTab} />
 
-      {activeTab.item === tabs[0].item && (isLoadingAllDaosTab ? <SkeletonTable /> : <AllDaosTable data={allDaosData} />)}
-      {activeTab.item === tabs[1].item && (isLoadingWatchlistTab ? <SkeletonTable /> : <WatchlistTable data={watchlistData} onTrackMoreClick={() => setActiveTab(tabs[4])} />)}
-      {activeTab.item === tabs[2].item && (isLoadingActiveProposalsTab ? <SkeletonTable /> : <ActiveDaosTable data={activeDaos} />)}
-      {activeTab.item === tabs[3].item && (isLoadingClosedProposalsTab ? <SkeletonTable /> : <ClosedDaosTable data={closedDaos} />)}
-      {activeTab.item === tabs[4].item && (isLoadingTrackDaosTab ? <SkeletonTable /> : <TrackDaosTable data={allDaosData} />)}
+      {activeTab.item === tabs[0].item &&
+        (isLoadingAllDaosTab ? <SkeletonTable /> : <AllDaosTable data={allDaosData} />)}
+      {activeTab.item === tabs[1].item &&
+        (isLoadingWatchlistTab ? (
+          <SkeletonTable />
+        ) : (
+          <WatchlistTable
+            data={watchlistData}
+            onTrackMoreClick={() => setActiveTab(tabs[4])}
+          />
+        ))}
+      {activeTab.item === tabs[2].item &&
+        (isLoadingActiveProposalsTab ? (
+          <SkeletonTable />
+        ) : (
+          <ActiveDaosTable data={activeDaos} />
+        ))}
+      {activeTab.item === tabs[3].item &&
+        (isLoadingClosedProposalsTab ? (
+          <SkeletonTable />
+        ) : (
+          <ClosedDaosTable data={closedDaos} />
+        ))}
+      {activeTab.item === tabs[4].item &&
+        (isLoadingTrackDaosTab ? (
+          <SkeletonTable />
+        ) : (
+          <TrackDaosTable data={allDaosData} />
+        ))}
       {/* <Footer /> */}
 
       {/* <DebugSuccessfulWalletModal /> */}
       <SuccessfulWalletModal />
       <DaosFoundModal />
-
     </div>
   );
 }

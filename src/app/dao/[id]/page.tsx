@@ -106,7 +106,7 @@ export default function DaoPage() {
           activeTab={activeTab}
           onTabChange={(tab) => setActiveTab(tab)}
         />
-        {activeTab === tabs[0] && <DaoStructureRoles />}
+        {activeTab === tabs[0] && daoData && <DaoStructureRoles daoPubkey={daoData.realm} />}
         {activeTab === tabs[1] && daoData && <ProposalsTab realm={daoData.realm} realmOwner={daoData.realmOwner} />}
         {activeTab === tabs[2] && daoData && <Treasurytab realm={daoData.realm} realmOwner={daoData.realmOwner} />}
         {activeTab === tabs[3] && daoData && (
@@ -114,6 +114,7 @@ export default function DaoPage() {
             realm={daoData.realm}
             realmOwner={daoData.realmOwner}
             governingTokenMint={daoData.communityMint}
+            councilMint={daoData.councilMint}
             page={page}
             setPage={setPage}
           />

@@ -9,7 +9,7 @@ interface RoleCardProps {
 }
 
 export default function RoleCard({ role }: RoleCardProps) {
-  const { title, description, holder, isVacant, } = role;
+  const { title, description, holder, isVacant, telegram, discord, x } = role;
 
   return (
     <div className="flex flex-col gap-4 md:gap-6 p-3 border border-[#F0F0F0] dark:border-[#282828B2] rounded-[5px]">
@@ -37,26 +37,43 @@ export default function RoleCard({ role }: RoleCardProps) {
         </Button>
       ) : (
         <div className="mt-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
-          <span className="text-[11px] md:text-[12px] text-[#909090] truncate w-full sm:w-auto">{holder ? `Holder: ${holder}` : ''}</span>
+          <span className="text-[11px] md:text-[12px] text-[#909090] truncate w-full sm:w-auto">
+            {holder ? `Holder: ${holder}` : ""}
+          </span>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              className="text-[#909090] transition-colors hover:text-foreground"
-              aria-label="Twitter"
-            >
-              <FaXTwitter className="h-3.5 w-3.5 md:h-4 md:w-4" />
-            </button>
-            <button
-              className="text-[#909090] transition-colors hover:text-foreground"
-              aria-label="Discord"
-            >
-              <RiDiscordLine className="h-3.5 w-3.5 md:h-4 md:w-4" />
-            </button>
-            <button
-              className="text-[#909090] transition-colors hover:text-foreground"
-              aria-label="Telegram"
-            >
-              <Send className="h-3.5 w-3.5 md:h-4 md:w-4" />
-            </button>
+            {x && (
+              <a
+                href={x}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#909090] transition-colors hover:text-foreground"
+                aria-label="Twitter"
+              >
+                <FaXTwitter className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              </a>
+            )}
+            {discord && (
+              <a
+                href={discord}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#909090] transition-colors hover:text-foreground"
+                aria-label="Discord"
+              >
+                <RiDiscordLine className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              </a>
+            )}
+            {telegram && (
+              <a
+                href={telegram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#909090] transition-colors hover:text-foreground"
+                aria-label="Telegram"
+              >
+                <Send className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              </a>
+            )}
           </div>
         </div>
       )}

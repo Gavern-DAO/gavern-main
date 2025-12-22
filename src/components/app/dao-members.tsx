@@ -8,11 +8,13 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MemberInfo, daosApi } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { DaoMembersSkeleton } from "./skeleton-dao";
+import { useMemo } from "react";
 
 interface DaoMembersProps {
   realm: string;
   realmOwner: string;
   governingTokenMint: string;
+  councilMint?: string;
   page: number;
   setPage: (page: number) => void;
 }
@@ -55,11 +57,7 @@ const columns: ColumnDef<MemberInfo>[] = [
     ),
     cell({ row }) {
       const data = row.original;
-      return (
-        <span className="block text-center">
-          {data.delegator ? "Yes" : "No"}
-        </span>
-      );
+      return <span className="block text-center">{data.delegator ? "Yes" : "No"}</span>;
     },
   },
   {
@@ -104,28 +102,108 @@ export default function DaoMembers({
   realm,
   realmOwner,
   governingTokenMint,
+  councilMint,
   page,
   setPage,
 }: DaoMembersProps) {
-  const { data: memberDetails, isLoading } = useQuery({
-    queryKey: ["memberDetails", realm, realmOwner, governingTokenMint, page],
-    queryFn: () =>
-      daosApi.getMemberInfo({
+  // Helper function to fetch all members from a mint
+  const fetchAllMembers = async (mint: string): Promise<MemberInfo[]> => {
+    const allMembers: MemberInfo[] = [];
+    let currentPage = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await daosApi.getMemberInfo({
         realm,
         realmOwner,
-        governingTokenMint,
-        page,
-        limit: 10,
-      }),
+        governingTokenMint: mint,
+        page: currentPage,
+        limit: 100, // Fetch larger batches for efficiency
+      });
+
+      allMembers.push(...response.members);
+      hasMore = response.pagination.hasNext;
+      currentPage++;
+    }
+
+    return allMembers;
+  };
+
+  // Fetch all community members
+  const { data: allCommunityMembers, isLoading: isLoadingCommunity } = useQuery({
+    queryKey: ["allMemberDetails", realm, realmOwner, governingTokenMint, "community"],
+    queryFn: () => fetchAllMembers(governingTokenMint),
     enabled: !!realm && !!realmOwner && !!governingTokenMint,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  // Fetch all council members if councilMint exists
+  const { data: allCouncilMembers, isLoading: isLoadingCouncil } = useQuery({
+    queryKey: ["allMemberDetails", realm, realmOwner, councilMint, "council"],
+    queryFn: () => fetchAllMembers(councilMint!),
+    enabled: !!realm && !!realmOwner && !!councilMint,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  const isLoading = isLoadingCommunity || isLoadingCouncil;
+
+  // Merge members from both sources
+  const mergedMembers = useMemo(() => {
+    const communityMembers = allCommunityMembers || [];
+    const councilMembers = allCouncilMembers || [];
+
+    // Create a map to merge members by their pubkey (member address)
+    const memberMap = new Map<string, MemberInfo>();
+
+    // Add community members first
+    communityMembers.forEach((member) => {
+      memberMap.set(member.member, { ...member });
+    });
+
+    // Merge council members - add numeric values if member already exists
+    councilMembers.forEach((member) => {
+      const existingMember = memberMap.get(member.member);
+      if (existingMember) {
+        // Member exists in both - merge numeric values
+        existingMember.votesCast = existingMember.votesCast + member.votesCast;
+        existingMember.proposalsCreated =
+          existingMember.proposalsCreated + member.proposalsCreated;
+        // Governance power is a string, so we need to parse and add
+        const existingPower = parseFloat(existingMember.governancePower) || 0;
+        const councilPower = parseFloat(member.governancePower) || 0;
+        existingMember.governancePower = (existingPower + councilPower).toString();
+        // Keep delegator from community (or could be OR logic, but keeping community for now)
+      } else {
+        // New member from council
+        memberMap.set(member.member, { ...member });
+      }
+    });
+
+    return Array.from(memberMap.values());
+  }, [allCommunityMembers, allCouncilMembers]);
+
+  // Calculate pagination for merged results
+  const limit = 10;
+  const totalMembers = mergedMembers.length;
+  const totalPages = Math.ceil(totalMembers / limit);
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedMembers = mergedMembers.slice(startIndex, endIndex);
+
+  const pagination = {
+    page,
+    limit,
+    total: totalMembers,
+    totalPages,
+    hasNext: page < totalPages,
+    hasPrevious: page > 1,
+  };
 
   if (isLoading) {
     return <DaoMembersSkeleton />;
   }
 
-  if (!memberDetails || memberDetails.members.length === 0) {
+  if (paginatedMembers.length === 0) {
     return (
       <div className="w-full bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] p-6 text-center text-lg font-semibold">
         No members found.
@@ -133,12 +211,10 @@ export default function DaoMembers({
     );
   }
 
-  const { members, pagination } = memberDetails;
-
   return (
     <div className="w-full bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2]">
       <div className="overflow-x-auto">
-        <DataTable columns={columns} data={members} />
+        <DataTable columns={columns} data={paginatedMembers} />
       </div>
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 font-medium text-xs md:text-sm text-[#101828] dark:text-[#EDEDED] py-3 md:py-4.5 px-4 md:px-6">
         <button
