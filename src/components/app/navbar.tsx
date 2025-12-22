@@ -7,6 +7,13 @@ import { Input } from "../ui/input";
 import { MdOutlineLightMode, MdOutlineDarkMode } from "react-icons/md";
 import { Button } from "../ui/button";
 import { CiSearch } from "react-icons/ci";
+import { Copy, LogOut, EllipsisVertical, User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "../ui/label";
 import { useTheme } from "next-themes";
 import { useWalletAuth } from "@/hooks/use-wallet-auth";
@@ -26,6 +33,7 @@ export default function Navbar() {
   const { setVisible } = useWalletModal();
   const { connect, connected, connecting, wallet } = useWallet();
   const [isConnecting, setIsConnecting] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
 
   // ✅ Track if we've already triggered auth for this connection
   const hasTriggeredAuthRef = React.useRef(false);
@@ -53,6 +61,14 @@ export default function Navbar() {
       console.error("Wallet connection failed:", err);
       setIsConnecting(false);
       hasTriggeredAuthRef.current = false;
+    }
+  };
+
+  const handleCopyAddress = () => {
+    if (publicKey) {
+      navigator.clipboard.writeText(publicKey.toBase58());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -148,18 +164,80 @@ export default function Navbar() {
               </button>
             </div>
             {isAuthenticated && publicKey ? (
-              <Button onClick={onDisconnectClick}>
-                Disconnect: {publicKey.toBase58().slice(0, 4)}...
-                {publicKey.toBase58().slice(-6)}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-1.5 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 rounded-[5px] border-0 font-medium bg-[#F1F1F1] dark:bg-[#0a0a0a] text-gray-900 dark:text-white text-xs md:text-sm"
+                    disabled={isAuthenticating}
+                  >
+                    {wallet?.adapter?.icon && (
+                      <img
+                        src={wallet.adapter.icon}
+                        alt={wallet.adapter.name}
+                        className="w-4 h-4 md:w-6 md:h-6 rounded-full flex-shrink-0"
+                      />
+                    )}
+                    <span className="hidden sm:inline truncate max-w-[80px] md:max-w-none">
+                      {isAuthenticating ? "Authenticating..." : `${publicKey.toBase58().slice(0, 4)}...${publicKey.toBase58().slice(-4)}`}
+                    </span>
+                    <span className="sm:hidden truncate max-w-[60px]">
+                      {isAuthenticating
+                        ? "Auth..."
+                        : `${publicKey.toBase58().slice(0, 4)}...${publicKey.toBase58().slice(-4)}`}
+                    </span>
+                    <EllipsisVertical className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem
+                    asChild
+                    className="gap-2 cursor-pointer text-[#101828B2] dark:text-gray-300"
+                  >
+                    <Link href={`/delegate/${publicKey.toBase58()}`}>
+                      <User className="w-4 h-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => {
+                      console.log("[Navbar] 📋 Copy address clicked");
+                      handleCopyAddress();
+                    }}
+                    className="gap-2 cursor-pointer text-[#101828B2] dark:text-gray-300"
+                  >
+                    <Copy className="w-4 h-4" />
+                    {copied ? "Copied!" : "Copy Address"}
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => {
+                      console.log("[Navbar] 🔌 Disconnect wallet clicked");
+                      onDisconnectClick();
+                    }}
+                    className="gap-2 text-[#101828B2] dark:text-gray-300 cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Disconnect wallet
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Button
                 onClick={handleConnectClick}
                 disabled={isLoading}
                 className={isLoading ? "opacity-70 cursor-not-allowed" : ""}
               >
-                {isConnecting || connecting ? "Connecting..." :
-                  isAuthenticating ? "Authenticating..." : "Connect Wallet"}
+                <span className="hidden sm:inline">
+                  {isConnecting || connecting ? "Connecting..." :
+                    isAuthenticating ? "Authenticating..." : "Connect Wallet"}
+                </span>
+                <span className="sm:hidden">
+                  {isConnecting || connecting ? "Connecting..." :
+                    isAuthenticating ? "Auth..." : "Connect"}
+                </span>
               </Button>
             )}
           </div>

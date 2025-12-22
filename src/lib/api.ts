@@ -126,7 +126,7 @@ export interface ApiError {
 }
 
 // Generic axios wrapper with auth support
-async function apiFetch<T>(
+export async function apiFetch<T>(
   endpoint: string,
   options: AxiosRequestConfig = {}
 ): Promise<T> {
