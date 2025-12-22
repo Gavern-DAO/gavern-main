@@ -43,15 +43,9 @@ export const useCreateProofOfWork = () => {
 
   return useMutation({
     mutationFn: (data: CreateProofOfWorkRequest) => delegateApi.createProofOfWork(data),
-    onSuccess: (_, variables) => {
-      // Invalidate the proof of work query for the user who created it (via their pubkey if we had it in context, 
-      // but simpler to just invalidate all or refetch relevant if we knew the pubkey)
-      // Since we don't have the pubkey of the creator easily here without extra context, 
-      // we'll assume the component will handle invalidation or we invalidate broadly if needed.
-      // Ideally, we'd invalidate ["proofOfWork", variables.daoPubkey] depending on how we want to view it.
-      // But typically proof of work is viewed by the delegate's pubkey.
-      // For now, let's just assume the user will refetch or we invalidate 'proofOfWork'
-       queryClient.invalidateQueries({ queryKey: ["proofOfWork"] });
+    onSuccess: () => {
+      // Invalidate the proof of work query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["proofOfWork"] });
     },
   });
 };

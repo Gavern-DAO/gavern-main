@@ -49,9 +49,9 @@ export default function ShareProfileModal({ open, onOpenChange, pubkey }: ShareP
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-white w-full max-w-md p-6 rounded-xl">
+            <DialogContent className="bg-white dark:bg-[#010101] w-full max-w-md p-6 rounded-xl dark:border dark:border-[#282828]">
                 <DialogHeader className="mb-4">
-                    <DialogTitle className="font-(family-name:--font-geist-sans) font-medium text-[20px] leading-[28px] text-[#101828] text-center">
+                    <DialogTitle className="font-(family-name:--font-geist-sans) font-medium text-[20px] leading-[28px] text-[#101828] dark:text-white text-center">
                         Share Delegate Profile
                     </DialogTitle>
                 </DialogHeader>
@@ -59,14 +59,14 @@ export default function ShareProfileModal({ open, onOpenChange, pubkey }: ShareP
                 <div className="flex flex-col gap-6">
                     {/* URL Display */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-gray-700">Profile Link</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Profile Link</label>
                         <div className="grid grid-cols-[1fr_auto] gap-2 w-full">
-                            <div className="min-w-0 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 truncate">
+                            <div className="min-w-0 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#282828] rounded-lg px-3 py-2 text-sm text-gray-600 dark:text-gray-400 truncate">
                                 {shareUrl}
                             </div>
                             <Button
                                 onClick={handleCopy}
-                                className="shrink-0 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 shadow-sm"
+                                className="shrink-0 bg-white dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#282828] hover:bg-gray-50 dark:hover:bg-[#171717] text-gray-700 dark:text-gray-300 shadow-sm"
                             >
                                 {copied ? "Copied!" : <HugeiconsIcon icon={Copy01Icon} size={18} />}
                             </Button>
@@ -77,7 +77,7 @@ export default function ShareProfileModal({ open, onOpenChange, pubkey }: ShareP
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             onClick={handleShareTwitter}
-                            className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors font-medium text-sm"
+                            className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-black dark:bg-[#171717] text-white hover:bg-gray-800 dark:hover:bg-[#282828] transition-colors font-medium text-sm"
                         >
                             <HugeiconsIcon icon={NewTwitterIcon} size={18} />
                             Share on X

@@ -8,7 +8,6 @@ import {
     DialogTitle,
 } from "../ui/dialog";
 import { useCreateProofOfWork } from "@/hooks/use-delegate";
-import { useWallet } from "@solana/wallet-adapter-react";
 // Assuming you have Input, Label, Button components in ui folder or similar, 
 // if not I will use standard HTML elements styled with tailwind.
 // Based on file list, I shouldn't assume too many UI components exist beyond what I saw.
@@ -25,7 +24,6 @@ interface ProofOfWorkModalProps {
 
 export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModalProps) {
     const { mutate: createProofOfWork, isPending } = useCreateProofOfWork();
-    const { publicKey } = useWallet();
 
     const [formData, setFormData] = useState({
         workTitle: "",

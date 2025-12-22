@@ -172,9 +172,11 @@ export default function Navbar() {
                     disabled={isAuthenticating}
                   >
                     {wallet?.adapter?.icon && (
-                      <img
+                      <Image
                         src={wallet.adapter.icon}
                         alt={wallet.adapter.name}
+                        width={24}
+                        height={24}
                         className="w-4 h-4 md:w-6 md:h-6 rounded-full flex-shrink-0"
                       />
                     )}

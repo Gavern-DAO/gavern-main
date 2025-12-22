@@ -46,7 +46,7 @@ const ProfileTabs = ({ pubkey }: ProfileTabsProps) => {
 
     const daoImageMap = useMemo(() => {
         if (!mainnetBeta) return {};
-        return mainnetBeta.reduce((acc: Record<string, string>, dao: any) => {
+        return mainnetBeta.reduce((acc: Record<string, string>, dao: { realmId?: string; ogImage?: string }) => {
             // Map by realmId (pubkey)
             if (dao.realmId) {
                 acc[dao.realmId] = dao.ogImage || "/dao-1.png";
