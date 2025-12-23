@@ -33,8 +33,8 @@ const ProofOfWork = ({ data, onAddMore, isOwnProfile }: ProofOfWorkProps) => {
     return (
         <div className="w-full">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between w-full px-[16px] border-b-[0.5px] border-[#E7E7E7] py-4 gap-4 md:gap-0">
-                <h2 className="font-(family-name:--font-geist-sans) font-medium text-[20px] leading-[100%] tracking-[0%] text-[#101828B2]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between w-full px-[16px] border-b-[0.5px] border-[#E7E7E7] dark:border-[#333333] py-4 gap-4 md:gap-0">
+                <h2 className="font-(family-name:--font-geist-sans) font-medium text-[20px] leading-[100%] tracking-[0%] text-[#101828B2] dark:text-[#D0D5DD]">
                     Proof of work
                 </h2>
                 {isOwnProfile && (
@@ -42,7 +42,7 @@ const ProofOfWork = ({ data, onAddMore, isOwnProfile }: ProofOfWorkProps) => {
                         onClick={onAddMore}
                         className="flex items-center justify-center text-white font-(family-name:--font-geist-sans) font-medium text-[14px] leading-[100%] hover:opacity-90 transition-opacity"
                         style={{
-                            background: '#010101',
+                            background: '#000000',
                             width: '115px',
                             height: '44px',
                             gap: '4px',
@@ -66,17 +66,17 @@ const ProofOfWork = ({ data, onAddMore, isOwnProfile }: ProofOfWorkProps) => {
             </div>
 
             {/* Content Area */}
-            <div className="flex flex-col gap-4 bg-gray-50/50 p-4">
+            <div className="flex flex-col gap-4 bg-gray-50/50 dark:bg-[#0D0D0D] p-4">
                 {data.map((item) => (
                     <div
                         key={item.id}
-                        className="bg-white border border-gray-100 rounded-xl p-5 transition-shadow"
+                        className="bg-white dark:bg-[#1A1A1A] border border-gray-100 dark:border-[#333333] rounded-xl p-5 transition-shadow"
                         style={{ boxShadow: '0px 1px 40px 0px #1018280D' }}
                     >
                         <div className="flex flex-col gap-3">
                             {/* Title and Edit Button */}
                             <div className="flex items-start justify-between gap-3">
-                                <h3 className="font-(family-name:--font-geist-sans) font-normal text-[16px] leading-[24px] text-[#101828]">
+                                <h3 className="font-(family-name:--font-geist-sans) font-normal text-[16px] leading-[24px] text-[#101828] dark:text-white">
                                     {item.workTitle}
                                 </h3>
                                 <button className="flex items-center gap-1 font-(family-name:--font-geist-sans) font-normal text-[14px] leading-[100%] hover:opacity-80 transition-opacity flex-shrink-0">
@@ -97,7 +97,7 @@ const ProofOfWork = ({ data, onAddMore, isOwnProfile }: ProofOfWorkProps) => {
 
                             {/* DAO Name with verification badge */}
                             <div className="flex items-center gap-2">
-                                <span className="font-(family-name:--font-geist-sans) font-normal text-[18px] leading-[100%] tracking-[0%] text-[#101828B2]">
+                                <span className="font-(family-name:--font-geist-sans) font-normal text-[18px] leading-[100%] tracking-[0%] text-[#101828B2] dark:text-[#D0D5DD]">
                                     {item.daoName}
                                 </span>
                                 {/* Assuming verified if it exists in the list for now, or we can add a verified field to type later */}
@@ -109,7 +109,7 @@ const ProofOfWork = ({ data, onAddMore, isOwnProfile }: ProofOfWorkProps) => {
 
                             {/* Skills */}
                             <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-(family-name:--font-geist-sans) font-normal text-[14px] leading-[100%] tracking-[0%] text-[#909090]">
+                                <span className="font-(family-name:--font-geist-sans) font-normal text-[14px] leading-[100%] tracking-[0%] text-[#909090] dark:text-[#888888]">
                                     Skill(s) required:
                                 </span>
                                 {item.skillsRequired.map((skill, index) => (

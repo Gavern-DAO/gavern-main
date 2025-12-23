@@ -75,7 +75,7 @@ const ProfileTabs = ({ pubkey }: ProfileTabsProps) => {
                     action = (
                         <button
                             onClick={() => setIsPoWModalOpen(true)}
-                            className="mt-4 bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
+                            className="mt-4 bg-black text-white dark:bg-white dark:text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
                         >
                             Upload proof of work
                         </button>
