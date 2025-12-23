@@ -227,7 +227,7 @@ export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModa
                                 {/* Helper text for custom DAO */}
                                 {(searchQuery && filteredDaos.length === 0) && (
                                     <p className="text-[12px] text-[#667085] dark:text-[#888888] mt-1">
-                                        DAO not found in the list? Click "Enter custom DAO" above to add it manually.
+                                        DAO not found in the list? Click &quot;Enter custom DAO&quot; above to add it manually.
                                     </p>
                                 )}
                             </>
