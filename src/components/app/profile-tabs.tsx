@@ -145,7 +145,7 @@ const ProfileTabs = ({ pubkey }: ProfileTabsProps) => {
 
     return (
         <>
-            <div className="flex gap-1.5 border-b border-gray-200/50 dark:border-[#282828] w-full mx-auto max-w-[1200px] bg-white dark:bg-[#010101] mt-6 items-center min-h-[76px] mb-4 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-1.5 border-b border-gray-200/50 dark:border-[#282828] w-full mx-auto max-w-[1200px] bg-white dark:bg-[#010101] mt-6 items-center min-h-[76px] mb-4 overflow-x-auto scrollbar-hide px-6 md:px-10">
                 {tabs.map((tab) => {
                     const isActive = activeTab === tab;
                     return (
@@ -153,7 +153,7 @@ const ProfileTabs = ({ pubkey }: ProfileTabsProps) => {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`
-              py-2 px-4 cursor-pointer
+              py-2 ${tab === tabs[0] ? "pl-0 pr-4" : "px-4"} cursor-pointer
               font-(family-name:--font-geist-sans)
               text-[16px]
               leading-[24px]
