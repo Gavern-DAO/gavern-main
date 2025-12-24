@@ -27,14 +27,23 @@ interface ProofOfWorkProps {
     data: ProofOfWorkType[];
     onAddMore?: () => void;
     isOwnProfile?: boolean;
+    onEdit?: (item: ProofOfWorkType) => void;
 }
 
-const ProofOfWork = ({ data, onAddMore, isOwnProfile }: ProofOfWorkProps) => {
+const ProofOfWork = ({ data, onAddMore, isOwnProfile, onEdit }: ProofOfWorkProps) => {
+    const [copiedId, setCopiedId] = React.useState<number | null>(null);
+
+    const handleCopyLink = (link: string, id: number) => {
+        navigator.clipboard.writeText(link);
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
+
     return (
         <div className="w-full">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between w-full px-[16px] border-b-[0.5px] border-[#E7E7E7] py-4 gap-4 md:gap-0">
-                <h2 className="font-(family-name:--font-geist-sans) font-medium text-[20px] leading-[100%] tracking-[0%] text-[#101828B2]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between w-full px-[16px] border-b-[0.5px] border-[#E7E7E7] dark:border-[#333333] py-4 gap-4 md:gap-0">
+                <h2 className="font-(family-name:--font-geist-sans) font-medium text-[20px] leading-[100%] tracking-[0%] text-[#101828B2] dark:text-[#D0D5DD]">
                     Proof of work
                 </h2>
                 {isOwnProfile && (
@@ -42,7 +51,7 @@ const ProofOfWork = ({ data, onAddMore, isOwnProfile }: ProofOfWorkProps) => {
                         onClick={onAddMore}
                         className="flex items-center justify-center text-white font-(family-name:--font-geist-sans) font-medium text-[14px] leading-[100%] hover:opacity-90 transition-opacity"
                         style={{
-                            background: '#010101',
+                            background: '#000000',
                             width: '115px',
                             height: '44px',
                             gap: '4px',
@@ -66,38 +75,56 @@ const ProofOfWork = ({ data, onAddMore, isOwnProfile }: ProofOfWorkProps) => {
             </div>
 
             {/* Content Area */}
-            <div className="flex flex-col gap-4 bg-gray-50/50 p-4">
+            <div className="flex flex-col gap-4 bg-gray-50/50 dark:bg-[#0D0D0D] p-4">
                 {data.map((item) => (
                     <div
                         key={item.id}
-                        className="bg-white border border-gray-100 rounded-xl p-5 transition-shadow"
+                        className="bg-white dark:bg-[#1A1A1A] border border-gray-100 dark:border-[#333333] rounded-xl p-5 transition-shadow"
                         style={{ boxShadow: '0px 1px 40px 0px #1018280D' }}
                     >
                         <div className="flex flex-col gap-3">
                             {/* Title and Edit Button */}
+                            {/* Title and Edit/Copy Buttons */}
                             <div className="flex items-start justify-between gap-3">
-                                <h3 className="font-(family-name:--font-geist-sans) font-normal text-[16px] leading-[24px] text-[#101828]">
+                                <h3 className="font-(family-name:--font-geist-sans) font-normal text-[16px] leading-[24px] text-[#101828] dark:text-white">
                                     {item.workTitle}
                                 </h3>
-                                <button className="flex items-center gap-1 font-(family-name:--font-geist-sans) font-normal text-[14px] leading-[100%] hover:opacity-80 transition-opacity flex-shrink-0">
-                                    <svg width="13" height="12" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M7.83333 1.94772L9.83333 3.94771M6.5 11.281H11.8333M1.16667 8.61438L0.5 11.281L3.16667 10.6144L10.8907 2.89038C11.1406 2.64034 11.281 2.30127 11.281 1.94772C11.281 1.59416 11.1406 1.25509 10.8907 1.00505L10.776 0.890382C10.526 0.640421 10.1869 0.5 9.83333 0.5C9.47978 0.5 9.1407 0.640421 8.89067 0.890382L1.16667 8.61438Z" stroke="url(#paint0_linear_3274_11655)" strokeLinecap="round" strokeLinejoin="round" />
-                                        <defs>
-                                            <linearGradient id="paint0_linear_3274_11655" x1="11.8333" y1="5.89053" x2="0.5" y2="5.89053" gradientUnits="userSpaceOnUse">
-                                                <stop stopColor="#22E9AD" />
-                                                <stop offset="1" stopColor="#9846FE" />
-                                            </linearGradient>
-                                        </defs>
-                                    </svg>
-                                    <span style={{ background: 'linear-gradient(270deg, #22E9AD 0%, #9846FE 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                                        Edit <span className="hidden sm:inline">personal information</span>
-                                    </span>
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                        title="Copy work link"
+                                        onClick={() => handleCopyLink(item.workLink, item.id)}
+                                    >
+                                        {copiedId === item.id ? (
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                        ) : (
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                        )}
+                                    </button>
+
+                                    {isOwnProfile && onEdit && (
+                                        <button
+                                            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+                                            title="Edit proof of work"
+                                            onClick={() => onEdit(item)}
+                                        >
+                                            <svg width="14" height="14" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-70 group-hover:opacity-100">
+                                                <path d="M7.83333 1.94772L9.83333 3.94771M6.5 11.281H11.8333M1.16667 8.61438L0.5 11.281L3.16667 10.6144L10.8907 2.89038C11.1406 2.64034 11.281 2.30127 11.281 1.94772C11.281 1.59416 11.1406 1.25509 10.8907 1.00505L10.776 0.890382C10.526 0.640421 10.1869 0.5 9.83333 0.5C9.47978 0.5 9.1407 0.640421 8.89067 0.890382L1.16667 8.61438Z" stroke="url(#paint0_linear_3274_11655)" strokeLinecap="round" strokeLinejoin="round" />
+                                                <defs>
+                                                    <linearGradient id="paint0_linear_3274_11655" x1="11.8333" y1="5.89053" x2="0.5" y2="5.89053" gradientUnits="userSpaceOnUse">
+                                                        <stop stopColor="#22E9AD" />
+                                                        <stop offset="1" stopColor="#9846FE" />
+                                                    </linearGradient>
+                                                </defs>
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             {/* DAO Name with verification badge */}
                             <div className="flex items-center gap-2">
-                                <span className="font-(family-name:--font-geist-sans) font-normal text-[18px] leading-[100%] tracking-[0%] text-[#101828B2]">
+                                <span className="font-(family-name:--font-geist-sans) font-normal text-[18px] leading-[100%] tracking-[0%] text-[#101828B2] dark:text-[#D0D5DD]">
                                     {item.daoName}
                                 </span>
                                 {/* Assuming verified if it exists in the list for now, or we can add a verified field to type later */}
@@ -109,7 +136,7 @@ const ProofOfWork = ({ data, onAddMore, isOwnProfile }: ProofOfWorkProps) => {
 
                             {/* Skills */}
                             <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-(family-name:--font-geist-sans) font-normal text-[14px] leading-[100%] tracking-[0%] text-[#909090]">
+                                <span className="font-(family-name:--font-geist-sans) font-normal text-[14px] leading-[100%] tracking-[0%] text-[#909090] dark:text-[#888888]">
                                     Skill(s) required:
                                 </span>
                                 {item.skillsRequired.map((skill, index) => (

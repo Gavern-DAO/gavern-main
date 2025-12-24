@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { delegateApi } from "@/services/delegate-api";
 import { CreateProofOfWorkRequest, UpdateProofOfWorkRequest } from "@/types/delegate";
+import { daosApi } from "@/lib/api";
 
 export const useDelegateActivity = (pubkey: string | undefined) => {
   return useQuery({
@@ -68,5 +69,13 @@ export const useDelegateStats = (pubkey: string | undefined) => {
     queryFn: () => delegateApi.getDelegateStats(pubkey!),
     enabled: !!pubkey,
     staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+export const useAllDaos = () => {
+  return useQuery({
+    queryKey: ["allDaos"],
+    queryFn: () => daosApi.getAllDaos(),
+    staleTime: 1000 * 60 * 30, // 30 minutes - DAOs don't change frequently
   });
 };

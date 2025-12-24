@@ -15,6 +15,7 @@ import {
     VotingHistorySkeleton,
     ProofOfWorkSkeleton
 } from "./profile-tab-skeletons";
+import { ProofOfWork as ProofOfWorkType } from "@/types/delegate";
 
 const tabs = ["Delegate Activity", "Voting history", "Proof of work"];
 
@@ -57,6 +58,12 @@ const ProfileTabs = ({ pubkey }: ProfileTabsProps) => {
 
     // Modal state
     const [isPoWModalOpen, setIsPoWModalOpen] = useState(false);
+    const [editableItem, setEditableItem] = useState<ProofOfWorkType | undefined>(undefined);
+
+    const handleEditItem = (item: ProofOfWorkType) => {
+        setEditableItem(item);
+        setIsPoWModalOpen(true);
+    };
 
     const renderEmptyState = () => {
         let message = "";
@@ -74,8 +81,11 @@ const ProfileTabs = ({ pubkey }: ProfileTabsProps) => {
                     message = "You don't have any proof of work uploaded.";
                     action = (
                         <button
-                            onClick={() => setIsPoWModalOpen(true)}
-                            className="mt-4 bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
+                            onClick={() => {
+                                setEditableItem(undefined);
+                                setIsPoWModalOpen(true);
+                            }}
+                            className="mt-4 bg-black text-white dark:bg-white dark:text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
                         >
                             Upload proof of work
                         </button>
@@ -176,12 +186,12 @@ const ProfileTabs = ({ pubkey }: ProfileTabsProps) => {
                     <div className="">
                         {activeTab === "Delegate Activity" && <DelegateActivity data={delegateActivity || []} daoImageMap={daoImageMap} />}
                         {activeTab === "Voting history" && <VotingHistory data={votingHistory?.history || []} totalCount={votingHistory?.totalCount || 0} />}
-                        {activeTab === "Proof of work" && <ProofOfWork data={proofOfWork || []} onAddMore={() => setIsPoWModalOpen(true)} isOwnProfile={isOwnProfile} />}
+                        {activeTab === "Proof of work" && <ProofOfWork data={proofOfWork || []} onAddMore={() => { setEditableItem(undefined); setIsPoWModalOpen(true); }} isOwnProfile={isOwnProfile} onEdit={handleEditItem} />}
                     </div>
                 )}
             </div>
 
-            <ProofOfWorkModal open={isPoWModalOpen} onOpenChange={setIsPoWModalOpen} />
+            <ProofOfWorkModal open={isPoWModalOpen} onOpenChange={setIsPoWModalOpen} initialData={editableItem} />
         </>
     );
 };
