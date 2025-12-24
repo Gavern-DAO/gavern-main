@@ -168,7 +168,7 @@ export default function ProofOfWorkModal({ open, onOpenChange, initialData }: Pr
             // Validate Public Key format
             try {
                 new PublicKey(customDao.pubkey);
-            } catch (error) {
+            } catch {
                 setSubmitError("Please enter a valid Solana public key");
                 return;
             }
@@ -216,6 +216,7 @@ export default function ProofOfWorkModal({ open, onOpenChange, initialData }: Pr
             setSubmitError(null);
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const onError = (error: any) => {
             console.error(initialData ? "Failed to update proof of work:" : "Failed to create proof of work:", error);
 
