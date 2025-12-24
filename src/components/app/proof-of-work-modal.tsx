@@ -20,6 +20,7 @@ import { Input } from "../ui/input";
 import { FaDiscord, FaTelegramPlane, FaChevronDown, FaCheck, FaTimes } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
+import { PublicKey } from "@solana/web3.js";
 
 const AVAILABLE_SKILLS = [
     "Designer",
@@ -97,17 +98,17 @@ export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModa
         // Validation
         const workTitleWords = formData.workTitle.trim().split(/\s+/);
         if (workTitleWords.length > 15) {
-            alert("Work title must not exceed 15 words");
+            setSubmitError("Work title must not exceed 15 words");
             return;
         }
 
         if (formData.skillsRequired.length === 0) {
-            alert("Please select at least one skill");
+            setSubmitError("Please select at least one skill");
             return;
         }
 
         if (!formData.x && !formData.discord && !formData.telegram) {
-            alert("Please provide at least one social media link");
+            setSubmitError("Please provide at least one social media link");
             return;
         }
 
@@ -117,9 +118,18 @@ export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModa
         if (isCustomDao) {
             // Use custom DAO input
             if (!customDao.name || !customDao.pubkey) {
-                alert("Please enter both DAO name and public key");
+                setSubmitError("Please enter both DAO name and public key");
                 return;
             }
+
+            // Validate Public Key format
+            try {
+                new PublicKey(customDao.pubkey);
+            } catch (error) {
+                setSubmitError("Please enter a valid Solana public key");
+                return;
+            }
+
             daoName = customDao.name;
             daoPubkey = customDao.pubkey;
         } else {
@@ -127,7 +137,7 @@ export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModa
             const selectedDao = daos?.find(dao => dao.pubkey === formData.selectedDaoPubkey);
 
             if (!selectedDao) {
-                alert("Please select a DAO");
+                setSubmitError("Please select a DAO");
                 return;
             }
             daoName = selectedDao.name;
@@ -203,9 +213,10 @@ export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModa
             const val = skillInputValue.trim();
             if (val && !formData.skillsRequired.includes(val)) {
                 if (formData.skillsRequired.length >= 3) {
-                    alert("You can select a maximum of 3 skills");
+                    setSubmitError("You can select a maximum of 3 skills");
                     return;
                 }
+                setSubmitError(null);
                 setFormData(prev => ({
                     ...prev,
                     skillsRequired: [...prev.skillsRequired, val]
