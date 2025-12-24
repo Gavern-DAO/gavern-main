@@ -322,7 +322,12 @@ export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModa
                                             <>
                                                 {filteredDaos.slice(0, 50).map((dao) => (
                                                     <SelectItem key={dao.pubkey} value={dao.pubkey}>
-                                                        {dao.name}
+                                                        <div className="flex items-center justify-between w-full gap-2 min-w-0">
+                                                            <span className="truncate">{dao.name}</span>
+                                                            <span className="text-xs text-[#667085] italic shrink-0">
+                                                                {dao.pubkey.slice(0, 4)}...{dao.pubkey.slice(-4)}
+                                                            </span>
+                                                        </div>
                                                     </SelectItem>
                                                 ))}
                                                 {filteredDaos.length > 50 && (
