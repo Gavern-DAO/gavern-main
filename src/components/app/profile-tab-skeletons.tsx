@@ -4,7 +4,7 @@ export const DelegateActivitySkeleton = () => {
     return (
         <div className="w-full">
             {/* Table Header */}
-            <div className="flex w-full border-b border-gray-100 pb-4 mb-4 px-6 pt-4">
+            <div className="flex w-full border-b border-gray-100 pb-4 mb-4 px-6 md:px-10 pt-4">
                 <div className="flex-1">
                     <Skeleton className="h-6 w-24" />
                 </div>
@@ -24,7 +24,7 @@ export const DelegateActivitySkeleton = () => {
                 {Array.from({ length: 5 }).map((_, index) => (
                     <div
                         key={index}
-                        className="flex w-full items-center py-2 border-b border-gray-50 last:border-0 px-6"
+                        className="flex w-full items-center py-2 border-b border-gray-50 last:border-0 px-6 md:px-10"
                     >
                         <div className="flex-1 flex items-center gap-3">
                             <Skeleton className="w-10 h-10 rounded-full shrink-0" />
@@ -49,11 +49,11 @@ export const DelegateActivitySkeleton = () => {
 export const VotingHistorySkeleton = () => {
     return (
         <div className="w-full">
-            <div className="flex items-center gap-[4px] w-full p-[16px] border-b-[0.5px] border-[#E7E7E7] dark:border-[#282828]">
+            <div className="flex items-center gap-[4px] w-full px-6 md:px-10 py-4 border-b-[0.5px] border-[#E7E7E7] dark:border-[#282828]">
                 <Skeleton className="h-6 w-32" />
             </div>
 
-            <div className="flex flex-col gap-4 bg-gray-50/50 dark:bg-transparent p-4">
+            <div className="flex flex-col gap-4 bg-gray-50/50 dark:bg-transparent px-6 md:px-10 py-4">
                 {Array.from({ length: 3 }).map((_, index) => (
                     <div
                         key={index}
@@ -86,7 +86,7 @@ export const ProofOfWorkSkeleton = () => {
     return (
         <div className="w-full">
             {/* Header */}
-            <div className="flex items-center justify-between w-full px-[16px] border-b-[0.5px] border-[#E7E7E7] dark:border-[#282828] py-4">
+            <div className="flex items-center justify-between w-full px-6 md:px-10 border-b-[0.5px] border-[#E7E7E7] dark:border-[#282828] py-4">
                 <Skeleton className="h-7 w-32" />
                 <Skeleton className="h-11 w-28 rounded-md" />
             </div>

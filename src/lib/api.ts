@@ -146,6 +146,7 @@ export async function apiFetch<T>(
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      console.log("Error: ", error);
       const axiosError = error as AxiosError<{ message?: string }>;
       const apiError: ApiError = {
         message: axiosError.response?.data?.message || axiosError.message || "API Error",

@@ -24,21 +24,31 @@ import { cn } from "@/lib/utils";
 import { PublicKey } from "@solana/web3.js";
 
 const AVAILABLE_SKILLS = [
-    "Designer",
-    "Content Creator",
+    "Blockchain Developer",
+    "Product Manager",
+    "Frontend Developer",
+    "Backend Developer",
     "Community Manager",
-    "Developer",
-    "Marketing",
-    "Operations"
+    "Content Creator",
+    "Designer",
+    "Growth/Marketing",
+    "Partnerships / Business Development Manager",
+    "Legal/Compliance Lead",
+    "Undefined"
 ];
 
 const SKILL_COLORS: Record<string, string> = {
-    "Designer": "bg-[#054F31] text-[#22E9AD]",
-    "Content Creator": "bg-[#B93815] text-white",
-    "Community Manager": "bg-[#4A154B] text-white",
-    "Developer": "bg-[#175CD3] text-white",
-    "Marketing": "bg-[#C4320A] text-white",
-    "Operations": "bg-[#3538CD] text-white",
+    "Blockchain Developer": "bg-[#1F235B] text-white border border-[#343EC1]",
+    "Product Manager": "bg-[#102A56] text-white border border-[#1D5CC6]",
+    "Frontend Developer": "bg-[#06504F] text-white border border-[#31FFFC48]",
+    "Backend Developer": "bg-[#3E3325] text-white border border-[#CE852948]",
+    "Community Manager": "bg-[#510350] text-white border border-[#FA45F848]",
+    "Content Creator": "bg-[#BF4E02] text-white border border-[#FFDCC548]",
+    "Designer": "bg-[#10563F] text-white border border-[#08B67C]",
+    "Growth/Marketing": "bg-[#511003] text-white border border-[#ED5A3C48]",
+    "Partnerships / Business Development Manager": "bg-[#435103] text-white border border-[#D4FF0F48]",
+    "Legal/Compliance Lead": "bg-[#06504F] text-white border border-[#31FFFC48]",
+    "Undefined": "bg-[#BF0238] text-white border border-[#FFECF148]",
 };
 
 interface ProofOfWorkModalProps {

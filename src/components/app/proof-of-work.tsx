@@ -3,24 +3,22 @@
 import React from "react";
 import { ProofOfWork as ProofOfWorkType } from "@/types/delegate";
 
-// Helper to get random skill color for UI
-const getSkillColor = (skill: string): "green" | "orange" | "purple" => {
-    const hash = skill.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const colors: ("green" | "orange" | "purple")[] = ["green", "orange", "purple"];
-    return colors[hash % colors.length];
+const SKILL_COLORS: Record<string, string> = {
+    "Blockchain Developer": "bg-[#1F235B] text-white border border-[#343EC1]",
+    "Product Manager": "bg-[#102A56] text-white border border-[#1D5CC6]",
+    "Frontend Developer": "bg-[#06504F] text-white border border-[#31FFFC48]",
+    "Backend Developer": "bg-[#3E3325] text-white border border-[#CE852948]",
+    "Community Manager": "bg-[#510350] text-white border border-[#FA45F848]",
+    "Content Creator": "bg-[#BF4E02] text-white border border-[#FFDCC548]",
+    "Designer": "bg-[#10563F] text-white border border-[#08B67C]",
+    "Growth/Marketing": "bg-[#511003] text-white border border-[#ED5A3C48]",
+    "Partnerships / Business Development Manager": "bg-[#435103] text-white border border-[#D4FF0F48]",
+    "Legal/Compliance Lead": "bg-[#06504F] text-white border border-[#31FFFC48]",
+    "Undefined": "bg-[#BF0238] text-white border border-[#FFECF148]",
 };
 
-const getSkillBadgeColor = (color: "green" | "orange" | "purple") => {
-    switch (color) {
-        case "green":
-            return "bg-[#10563F] text-white border border-[#08B67C]";
-        case "orange":
-            return "bg-[#BF4E02] text-white border border-[#FFDCC548]";
-        case "purple":
-            return "bg-[#510350] text-white border border-[#FA45F848]";
-        default:
-            return "bg-gray-500 text-white";
-    }
+const getSkillBadgeColor = (skill: string) => {
+    return SKILL_COLORS[skill] || "bg-[#BF0238] text-white border border-[#FFECF148]"; // Using 'Undefined' colors as fallback
 };
 
 interface ProofOfWorkProps {
@@ -42,8 +40,8 @@ const ProofOfWork = ({ data, onAddMore, isOwnProfile, onEdit }: ProofOfWorkProps
     return (
         <div className="w-full">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between w-full px-[16px] border-b-[0.5px] border-[#E7E7E7] dark:border-[#333333] py-4 gap-4 md:gap-0">
-                <h2 className="font-(family-name:--font-geist-sans) font-medium text-[20px] leading-[100%] tracking-[0%] text-[#101828B2] dark:text-[#D0D5DD]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between w-full px-6 md:px-10 border-b-[0.5px] border-[#E7E7E7] dark:border-[#333333] py-4 gap-4 md:gap-0">
+                <h2 className="font-(family-name:--font-geist-sans) font-medium text-[16px] leading-[100%] tracking-[0%] text-gray-900 dark:text-[#D0D5DD]">
                     Proof of work
                 </h2>
                 {isOwnProfile && (
@@ -75,18 +73,17 @@ const ProofOfWork = ({ data, onAddMore, isOwnProfile, onEdit }: ProofOfWorkProps
             </div>
 
             {/* Content Area */}
-            <div className="flex flex-col gap-4 bg-gray-50/50 dark:bg-[#0D0D0D] p-4">
+            <div className="flex flex-col gap-4 bg-gray-50/50 dark:bg-[#0D0D0D] px-6 md:px-10 pt-8 pb-4">
                 {data.map((item) => (
                     <div
                         key={item.id}
-                        className="bg-white dark:bg-[#1A1A1A] border border-gray-100 dark:border-[#333333] rounded-xl p-5 transition-shadow"
-                        style={{ boxShadow: '0px 1px 40px 0px #1018280D' }}
+                        className="bg-white dark:bg-[#1A1A1A] border border-[#E7E7E7] dark:border-[#333333] rounded-[5px] p-5"
                     >
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-1.5">
                             {/* Title and Edit Button */}
                             {/* Title and Edit/Copy Buttons */}
                             <div className="flex items-start justify-between gap-3">
-                                <h3 className="font-(family-name:--font-geist-sans) font-normal text-[16px] leading-[24px] text-[#101828] dark:text-white">
+                                <h3 className="font-(family-name:--font-geist-sans) font-normal text-[20px] leading-[28px] text-[#101828] dark:text-white">
                                     {item.workTitle}
                                 </h3>
                                 <div className="flex items-center gap-2">
@@ -142,7 +139,7 @@ const ProofOfWork = ({ data, onAddMore, isOwnProfile, onEdit }: ProofOfWorkProps
                                 {item.skillsRequired.map((skill, index) => (
                                     <span
                                         key={index}
-                                        className={`${getSkillBadgeColor(getSkillColor(skill))} px-3 py-1.5 rounded-full font-(family-name:--font-geist-sans) font-medium text-[12px] leading-[100%]`}
+                                        className={`${getSkillBadgeColor(skill)} px-3 py-1.5 rounded-full font-(family-name:--font-geist-sans) font-medium text-[12px] leading-[100%]`}
                                     >
                                         {skill}
                                     </span>
