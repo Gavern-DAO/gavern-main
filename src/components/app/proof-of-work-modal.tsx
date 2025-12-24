@@ -7,7 +7,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "../ui/dialog";
-import { useCreateProofOfWork, useAllDaos } from "@/hooks/use-delegate";
+import { useCreateProofOfWork, useUpdateProofOfWork, useAllDaos } from "@/hooks/use-delegate";
+import { ProofOfWork } from "@/types/delegate";
 import { Button } from "../ui/button";
 import {
     Select,
@@ -43,10 +44,14 @@ const SKILL_COLORS: Record<string, string> = {
 interface ProofOfWorkModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    initialData?: ProofOfWork;
 }
 
-export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModalProps) {
-    const { mutate: createProofOfWork, isPending } = useCreateProofOfWork();
+export default function ProofOfWorkModal({ open, onOpenChange, initialData }: ProofOfWorkModalProps) {
+    const { mutate: createProofOfWork, isPending: isCreating } = useCreateProofOfWork();
+    const { mutate: updateProofOfWork, isPending: isUpdating } = useUpdateProofOfWork();
+    const isPending = isCreating || isUpdating;
+
     const { data: daos, isLoading: isLoadingDaos } = useAllDaos();
 
     const [formData, setFormData] = useState({
@@ -58,6 +63,44 @@ export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModa
         telegram: "",
         x: "",
     });
+
+    // Initialize form with initialData when open changes
+    React.useEffect(() => {
+        if (open) {
+            if (initialData) {
+                setFormData({
+                    workTitle: initialData.workTitle,
+                    selectedDaoPubkey: initialData.daoPubkey,
+                    skillsRequired: initialData.skillsRequired,
+                    workLink: initialData.workLink,
+                    discord: initialData.discord || "",
+                    telegram: initialData.telegram || "",
+                    x: initialData.x || "",
+                });
+                // If the DAO is not in the list, we might want to set custom DAO
+                // But for now let's assume if we have a pubkey it might be in the list or we treat it as custom if not found?
+                // Actually, let's check if the DAO exists in the loaded list.
+                // Since daos might be loading, this is tricky. 
+                // For simplicity, we populate the fields. Users can switch to custom if needed.
+                // A better approach: if we have initialData, we might strictly stick to what we have.
+                // Let's set customDao state just in case, but selectedDaoPubkey is primary.
+            } else {
+                // Reset form
+                setFormData({
+                    workTitle: "",
+                    selectedDaoPubkey: "",
+                    skillsRequired: [],
+                    workLink: "",
+                    discord: "",
+                    telegram: "",
+                    x: "",
+                });
+                setIsCustomDao(false);
+                setCustomDao({ name: "", pubkey: "" });
+            }
+            setSubmitError(null);
+        }
+    }, [open, initialData]);
 
     const [isSkillsOpen, setIsSkillsOpen] = useState(false);
     const [skillInputValue, setSkillInputValue] = useState("");
@@ -144,7 +187,7 @@ export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModa
             daoPubkey = selectedDao.pubkey;
         }
 
-        createProofOfWork({
+        const payload = {
             workTitle: formData.workTitle,
             daoName: daoName,
             daoPubkey: daoPubkey,
@@ -153,39 +196,47 @@ export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModa
             discord: formData.discord,
             telegram: formData.telegram,
             x: formData.x,
-        }, {
-            onSuccess: () => {
-                onOpenChange(false);
-                setFormData({
-                    workTitle: "",
-                    selectedDaoPubkey: "",
-                    skillsRequired: [],
-                    workLink: "",
-                    discord: "",
-                    telegram: "",
-                    x: "",
-                });
-                setSearchQuery("");
-                setSkillInputValue("");
-                setCustomDao({ name: "", pubkey: "" });
-                setIsCustomDao(false);
-                setSubmitError(null);
-            },
-            onError: (error: any) => {
-                console.error("Failed to create proof of work:", error);
+        };
 
-                // Handle backend error message format
-                // Expected format: { message: ["error1", "error2"], ... } or { message: "error" }
-                const message = error?.response?.data?.message || error?.message || "Failed to submit proof of work";
+        const onSuccess = () => {
+            onOpenChange(false);
+            setFormData({
+                workTitle: "",
+                selectedDaoPubkey: "",
+                skillsRequired: [],
+                workLink: "",
+                discord: "",
+                telegram: "",
+                x: "",
+            });
+            setSearchQuery("");
+            setSkillInputValue("");
+            setCustomDao({ name: "", pubkey: "" });
+            setIsCustomDao(false);
+            setSubmitError(null);
+        };
 
-                if (Array.isArray(message)) {
-                    setSubmitError(message.join(", "));
-                } else {
-                    setSubmitError(String(message));
-                }
+        const onError = (error: any) => {
+            console.error(initialData ? "Failed to update proof of work:" : "Failed to create proof of work:", error);
+
+            // Handle backend error message format
+            // Expected format: { message: ["error1", "error2"], ... } or { message: "error" }
+            const message = error?.response?.data?.message || error?.message || (initialData ? "Failed to update proof of work" : "Failed to create proof of work");
+
+            if (Array.isArray(message)) {
+                setSubmitError(message.join(", "));
+            } else {
+                setSubmitError(String(message));
             }
-        });
+        };
+
+        if (initialData) {
+            updateProofOfWork({ id: initialData.id, data: payload }, { onSuccess, onError });
+        } else {
+            createProofOfWork(payload, { onSuccess, onError });
+        }
     };
+
 
     const toggleSkill = (skill: string) => {
         setFormData(prev => {
@@ -237,10 +288,12 @@ export default function ProofOfWorkModal({ open, onOpenChange }: ProofOfWorkModa
             <DialogContent className="bg-white dark:bg-[#010101] dark:text-white w-full sm:max-w-[690px] overflow-y-auto max-h-[90vh] p-4 md:p-6 rounded-[4px] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-thumb]:bg-[#D0D5DD] dark:[&::-webkit-scrollbar-thumb]:bg-[#333] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
                 <DialogHeader className="mb-6">
                     <DialogTitle className="font-(family-name:--font-geist-sans) font-medium text-[24px] leading-[32px] text-[#101828] dark:text-white">
-                        Proof of work
+                        {initialData ? "Edit Proof of Work" : "Proof of work"}
                     </DialogTitle>
                     <p className="font-(family-name:--font-geist-sans) text-[14px] leading-[20px] text-[#667085] dark:text-[#98A2B3] mt-2">
-                        Please provide details of your proof of work for the DAO you have worked or currently work for.
+                        {initialData
+                            ? "Update the details of your proof of work."
+                            : "Please provide details of your proof of work for the DAO you have worked or currently work for."}
                     </p>
                 </DialogHeader>
 
