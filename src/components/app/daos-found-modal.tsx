@@ -10,8 +10,7 @@ import {
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { useWalletAuth } from "@/hooks/use-wallet-auth";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { userApi } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Dao {
   imageUrl: string;
@@ -19,31 +18,27 @@ interface Dao {
   governingTokenDepositAmount: string;
 }
 
+interface DaosData {
+  count: number;
+  result: Dao[];
+}
+
 export default function DaosFoundModal() {
   const { daosFoundModalOpen, setDaosFoundModalOpen } = useWalletAuth();
   const queryClient = useQueryClient();
 
   // Get cached data from the mutation (set in use-wallet-auth hook)
-  const cachedData = queryClient.getQueryData<{ count: number; result: Dao[] }>(["daos"]);
-  
-  // Only make a query if we don't have cached data and modal is open
-  const { data: daosData } = useQuery<{ count: number; result: Dao[] }>({
-    queryKey: ["daos"],
-    queryFn: userApi.getDaos,
-    enabled: !cachedData && daosFoundModalOpen, // Only fetch if no cached data and modal is open
-    retry: false, // Don't retry on error
-    initialData: cachedData, // Use cached data if available
-  });
+  // This data was already fetched during the countdown phase
+  const cachedData = queryClient.getQueryData<DaosData>(["daos"]);
 
   const handleGoToDashboard = () => {
     setDaosFoundModalOpen(false);
   };
 
-  // Use cached data if query data is undefined (e.g., on error or when using cached data)
-  // The mutation's onError sets this to { count: 0, result: [] } when API returns 400
-  const finalDaosData = daosData || cachedData || { count: 0, result: [] };
-  
-  // Show modal even if there's an error - we'll display "No DAOs Found"
+  // Use cached data, default to empty if not available
+  const finalDaosData: DaosData = cachedData || { count: 0, result: [] };
+
+  // Don't render if modal is not open
   if (!daosFoundModalOpen) {
     return null;
   }

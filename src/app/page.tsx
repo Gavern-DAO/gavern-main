@@ -19,6 +19,7 @@ import SuccessfulWalletModal from "@/components/app/successful-wallet-modal";
 import DaosFoundModal from "@/components/app/daos-found-modal";
 import axios from "axios";
 import SkeletonTable from "@/components/app/skeleton-table";
+import { formatNumber } from "@/lib/utils";
 
 const Navbar = dynamic(() => import("@/components/app/navbar"), { ssr: false });
 
@@ -133,12 +134,12 @@ export default function Page() {
 
       const summaryData = await daosApi.getSummaryForDaos(finalPubkeysToSummarize);
       console.log("[Page] Summary data from API:", summaryData);
-      
+
       // Sort the results to ensure prioritized DAOs appear at the top
       const sortedSummaryData = summaryData.sort((a, b) => {
         const aIndex = priorityPubkeys.indexOf(a.realm);
         const bIndex = priorityPubkeys.indexOf(b.realm);
-        
+
         // If both are in priority list, maintain their order in priority list
         if (aIndex !== -1 && bIndex !== -1) {
           return aIndex - bIndex;
@@ -154,61 +155,24 @@ export default function Page() {
         // If neither is in priority list, maintain original order
         return 0;
       });
-      
+
       return sortedSummaryData;
     },
     enabled: !!allDaos,
   });
 
-  const { data: trackedDaos, isLoading: isLoadingTrackedDaos } = useQuery({
-    queryKey: ["trackedDaos"],
-    queryFn: userApi.getTrackedDaos,
+  // Fetch tracked DAOs with summaries and governance power in a single call
+  const { data: trackedDaosWithSummary, isLoading: isLoadingTrackedDaosWithSummary } = useQuery({
+    queryKey: ["trackedDaosWithSummary"],
+    queryFn: userApi.getTrackedDaosWithSummary,
     enabled: isAuthenticated,
   });
 
-  // Log trackedDaos changes
+  // Log trackedDaosWithSummary changes
   useEffect(() => {
-    console.log("[Page] trackedDaos changed:", trackedDaos);
-    console.log("[Page] trackedDaos isLoading:", isLoadingTrackedDaos);
-  }, [trackedDaos, isLoadingTrackedDaos]);
-
-  const { data: summarizedTrackedDaos, isLoading: isLoadingSummarizedTrackedDaos } =
-    useQuery({
-      queryKey: ["summarizedTrackedDaos", trackedDaos],
-      queryFn: async () => {
-        console.log(
-          "[Page] summarizedTrackedDaos queryFn called with trackedDaos:",
-          trackedDaos
-        );
-        if (!trackedDaos) {
-          console.log("[Page] No trackedDaos, returning empty array");
-          return [];
-        }
-
-        const daoPubkeysToSummarize = trackedDaos.map((dao) => dao.pubkey);
-        console.log("[Page] DAO pubkeys to summarize:", daoPubkeysToSummarize);
-
-        if (daoPubkeysToSummarize.length === 0) {
-          console.log("[Page] No pubkeys to summarize, returning empty array");
-          return [];
-        }
-
-        console.log("[Page] Fetching summary for DAOs...");
-        const result = await daosApi.getSummaryForDaos(daoPubkeysToSummarize);
-        console.log("[Page] Summary result:", result);
-        return result;
-      },
-      enabled: !!trackedDaos,
-    });
-
-  // Log summarizedTrackedDaos changes
-  useEffect(() => {
-    console.log("[Page] summarizedTrackedDaos changed:", summarizedTrackedDaos);
-    console.log(
-      "[Page] summarizedTrackedDaos isLoading:",
-      isLoadingSummarizedTrackedDaos
-    );
-  }, [summarizedTrackedDaos, isLoadingSummarizedTrackedDaos]);
+    console.log("[Page] trackedDaosWithSummary changed:", trackedDaosWithSummary);
+    console.log("[Page] trackedDaosWithSummary isLoading:", isLoadingTrackedDaosWithSummary);
+  }, [trackedDaosWithSummary, isLoadingTrackedDaosWithSummary]);
 
   const { data: mainnetBeta, isLoading: isLoadingMainnetBeta } = useQuery({
     queryKey: ["mainnetBeta"],
@@ -229,9 +193,7 @@ export default function Page() {
     isLoadingMainnetBeta;
 
   const isLoadingWatchlistTab =
-    (isAuthenticated && isLoadingTrackedDaos) ||
-    (isAuthenticated && isLoadingSummarizedTrackedDaos) ||
-    isLoadingSummarizedDaos ||
+    (isAuthenticated && isLoadingTrackedDaosWithSummary) ||
     isLoadingMainnetBeta;
 
   const isLoadingActiveProposalsTab = isLoadingAllDaosTab;
@@ -240,43 +202,50 @@ export default function Page() {
 
   const allDaosData = Array.isArray(summarizedDaos)
     ? summarizedDaos.map((dao) => {
-        const mainnetDao = mainnetBeta?.find(
-          (mDao: MainnetDao) => mDao.realmId === dao.realm
-        );
-        return {
-          id: dao.realm,
-          daoName: dao.realmName,
-          daoHealth: (dao.status === "active" ? "Alive" : "Dead") as "Alive" | "Dead",
-          proposals: dao.proposalCount,
-          treasuryBalance: `$${Number(dao.treasuryBalance).toLocaleString()}`,
-          isActive: dao.activeProposal.exists,
-          timeLeft: dao.activeProposal.exists
-            ? dao.activeProposal.latest
-            : dao.closedProposal.latest,
-          image: mainnetDao?.ogImage ?? "/dao-1.png",
-        };
-      })
+      const mainnetDao = mainnetBeta?.find(
+        (mDao: MainnetDao) => mDao.realmId === dao.realm
+      );
+      return {
+        id: dao.realm,
+        daoName: dao.realmName,
+        daoHealth: (dao.status === "active" ? "Alive" : "Dead") as "Alive" | "Dead",
+        proposals: dao.proposalCount,
+        treasuryBalance: `$${Number(dao.treasuryBalance).toLocaleString()}`,
+        isActive: dao.activeProposal.exists,
+        timeLeft: dao.activeProposal.exists
+          ? dao.activeProposal.latest
+          : dao.closedProposal.latest,
+        image: mainnetDao?.ogImage ?? "/dao-1.png",
+      };
+    })
     : [];
 
+  // Map trackedDaosWithSummary to watchlist data format
   const watchlistData = useMemo(
-    () =>
-      Array.isArray(summarizedDaos)
-        ? summarizedTrackedDaos?.map((dao) => {
-            const mainnetDao = mainnetBeta?.find(
-              (mDao: MainnetDao) => mDao.realmId === dao.realm
-            );
-            return {
-              id: dao.realm,
-              daoName: dao.realmName,
-              daoHealth: (dao.status === "active" ? "Alive" : "Dead") as "Alive" | "Dead",
-              proposals: dao.proposalCount,
-              treasuryBalance: `$${Number(dao.treasuryBalance).toLocaleString()}`,
-              image: mainnetDao?.ogImage ?? "/dao-1.png",
-              amountDetected: "", // This needs to be implemented
-            };
-          }) ?? []
-        : [],
-    [summarizedDaos, summarizedTrackedDaos, mainnetBeta]
+    () => {
+      if (!trackedDaosWithSummary?.result) {
+        return [];
+      }
+
+      return trackedDaosWithSummary.result.map((dao) => {
+        const mainnetDao = mainnetBeta?.find(
+          (mDao: MainnetDao) => mDao.realmId === dao.pubkey
+        );
+
+        return {
+          id: dao.pubkey,
+          daoName: dao.name || dao.summary?.realmName || "Unknown DAO",
+          daoHealth: (dao.summary?.status === "active" ? "Alive" : "Dead") as "Alive" | "Dead",
+          proposals: dao.summary?.proposalCount || 0,
+          treasuryBalance: dao.summary
+            ? `$${Number(dao.summary.treasuryBalance).toLocaleString()}`
+            : "$0",
+          image: mainnetDao?.ogImage ?? "/dao-1.png",
+          governancePower: dao.governancePower || "0",
+        };
+      });
+    },
+    [trackedDaosWithSummary, mainnetBeta]
   );
 
   // Log watchlistData changes
@@ -284,10 +253,10 @@ export default function Page() {
     console.log("[Page] watchlistData changed:", watchlistData);
     console.log("[Page] watchlistData length:", watchlistData.length);
     console.log(
-      "[Page] summarizedTrackedDaos used for watchlist:",
-      summarizedTrackedDaos
+      "[Page] trackedDaosWithSummary used for watchlist:",
+      trackedDaosWithSummary
     );
-  }, [watchlistData, summarizedTrackedDaos]);
+  }, [watchlistData, trackedDaosWithSummary]);
 
   const activeDaos = allDaosData.filter((dao) => dao.isActive);
   const closedDaos = allDaosData

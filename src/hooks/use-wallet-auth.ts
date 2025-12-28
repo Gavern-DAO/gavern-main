@@ -9,8 +9,8 @@ import { setAuthToken } from "@/lib/cookie";
 
 export const useWalletAuth = () => {
   const { connected, publicKey, disconnect, signMessage } = useWallet();
-  const { 
-    isAuthenticated, 
+  const {
+    isAuthenticated,
     setIsAuthenticated,
     successfulWalletModalOpen,
     setSuccessfulWalletModalOpen,
@@ -18,38 +18,34 @@ export const useWalletAuth = () => {
     setDaosFoundModalOpen,
     countdown,
     setCountdown,
-    resetAuthState, // ✅ Get reset function
+    resetAuthState,
   } = useAuthStore();
-  
+
   const queryClient = useQueryClient();
 
-  // ✅ Track authentication state to prevent multiple attempts
+  // Track authentication state to prevent multiple attempts
   const isAuthInProgress = useRef(false);
+
+  // Track if DAO fetch has completed (success or error)
+  const daoFetchComplete = useRef(false);
 
   const getDaosMutation = useMutation({
     mutationFn: userApi.getDaos,
-    onSuccess: (data) => {
-      console.log("✅ DAOs fetched successfully:", data);
-      const daos = data.result.map((dao) => ({
-        ...dao,
-        imageUrl: `/${dao.realmName.toLowerCase().replace(/\s+/g, "-")}.png`,
-      }));
-      queryClient.setQueryData(["daos"], { count: daos.length, result: daos });
+    onSuccess: (data: any) => {
+      // Cache the data for the modal to read
+      queryClient.setQueryData(["daos"], data);
 
-      console.log("🔄 Closing SuccessfulWalletModal, opening DaosFoundModal");
-      setSuccessfulWalletModalOpen(false);
-      setDaosFoundModalOpen(true);
+      // Mark fetch as complete
+      daoFetchComplete.current = true;
     },
     onError: (e: Error) => {
-      console.log("❌ Error Fetching Daos:", e);
-      console.log("🔄 Closing SuccessfulWalletModal");
-      setSuccessfulWalletModalOpen(false);
+      console.error("Error fetching DAOs:", e.message);
 
-      if (e.message === "This user doesn't belong to any DAO") {
-        console.log("🔄 Opening DaosFoundModal (no DAOs)");
-        setDaosFoundModalOpen(true);
-      }
+      // Cache empty result
       queryClient.setQueryData(["daos"], { count: 0, result: [] });
+
+      // Mark fetch as complete (even on error)
+      daoFetchComplete.current = true;
     },
   });
 
@@ -88,6 +84,7 @@ export const useWalletAuth = () => {
       setCountdown(10);
 
       isAuthInProgress.current = false;
+      daoFetchComplete.current = false; // Reset for new fetch
 
       console.log("🔍 Starting DAOs fetch...");
       getDaosMutation.mutate();
@@ -95,7 +92,7 @@ export const useWalletAuth = () => {
     onError: (err) => {
       console.error("❌ Auth failed:", err);
       disconnect();
-      resetAuthState(); // ✅ Reset all state on auth failure
+      resetAuthState();
       isAuthInProgress.current = false;
     },
   });
@@ -129,39 +126,55 @@ export const useWalletAuth = () => {
 
   const handleDisconnect = () => {
     console.log("👋 Disconnecting wallet...");
-    
-    // ✅ 1. Disconnect wallet
+
     disconnect();
-    
-    // ✅ 2. Clear auth token cookie
-    setAuthToken(""); // Clear the cookie
-    
-    // ✅ 3. Reset all Zustand auth state
+    setAuthToken("");
     resetAuthState();
-    
-    // ✅ 4. Clear React Query cache
     queryClient.clear();
-    
-    // ✅ 5. Reset auth progress flag
     isAuthInProgress.current = false;
-    
+    daoFetchComplete.current = false;
+
     console.log("✅ Disconnect complete!");
   };
 
-  // ✅ Auto-close SuccessfulWalletModal and open DaosFoundModal when countdown reaches 0
+  // Countdown timer effect
   useEffect(() => {
     let timer: NodeJS.Timeout;
+
     if (successfulWalletModalOpen && countdown > 0) {
       timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    } else if (successfulWalletModalOpen && countdown === 0) {
-      console.log("⏰ Countdown reached 0, forcing modal transition");
-      setSuccessfulWalletModalOpen(false);
-      setDaosFoundModalOpen(true);
     }
-    return () => clearTimeout(timer);
-  }, [successfulWalletModalOpen, countdown, setSuccessfulWalletModalOpen, setDaosFoundModalOpen, setCountdown]);
 
-  // ✅ Debug: Log modal state changes
+    return () => clearTimeout(timer);
+  }, [successfulWalletModalOpen, countdown, setCountdown]);
+
+  // Transition effect: When countdown reaches 0 AND API fetch is complete, transition to DaosFoundModal
+  useEffect(() => {
+    if (successfulWalletModalOpen && countdown === 0) {
+      // Check if API fetch is complete (using ref to avoid stale closure)
+      if (daoFetchComplete.current) {
+        console.log("⏰ Countdown is 0 & API complete -> Transitioning to DaosFoundModal");
+        setSuccessfulWalletModalOpen(false);
+        setDaosFoundModalOpen(true);
+      } else {
+        console.log("⏰ Countdown is 0 but API still pending -> Waiting...");
+        // Poll every 100ms to check if API is complete
+        const pollInterval = setInterval(() => {
+          if (daoFetchComplete.current) {
+            console.log("⏰ API complete -> Transitioning to DaosFoundModal");
+            setSuccessfulWalletModalOpen(false);
+            setDaosFoundModalOpen(true);
+            clearInterval(pollInterval);
+          }
+        }, 100);
+
+        // Cleanup
+        return () => clearInterval(pollInterval);
+      }
+    }
+  }, [successfulWalletModalOpen, countdown, setSuccessfulWalletModalOpen, setDaosFoundModalOpen]);
+
+  // Debug: Log modal state changes
   useEffect(() => {
     console.log("🔵 Modal State:", {
       successfulWalletModalOpen,
@@ -169,6 +182,7 @@ export const useWalletAuth = () => {
       countdown,
       isAuthenticating: authenticateMutation.isPending,
       isFetchingDaos: getDaosMutation.isPending,
+      daoFetchComplete: daoFetchComplete.current,
     });
   }, [successfulWalletModalOpen, daosFoundModalOpen, countdown, authenticateMutation.isPending, getDaosMutation.isPending]);
 
@@ -177,6 +191,7 @@ export const useWalletAuth = () => {
     publicKey,
     isAuthenticated,
     isAuthenticating: authenticateMutation.isPending,
+    isFetchingDaos: getDaosMutation.isPending,
     startAuthentication,
     handleDisconnect,
     successfulWalletModalOpen,

@@ -256,33 +256,53 @@ export const userApi = {
    * GET /user/daos-user
    */
   getDaosByWallet: async (wallet: string) => {
-    return apiFetch<{
+    const data = await apiFetch<{
       count: number;
-      result: {
-        imageUrl: string;
-        realmName: string;
-        governingTokenDepositAmount: string;
-      }[];
+      result: any[];
     }>(`/user/daos-user?wallet=${encodeURIComponent(wallet)}`, {
       method: "GET",
     });
+
+    return {
+      ...data,
+      result: (data.result || []).map((dao) => ({
+        ...dao,
+        imageUrl: dao.imageUrl || `/${(dao.realmName || "unknown").toLowerCase().replace(/\s+/g, "-")}.png`,
+      })),
+    };
   },
 
   /**
    * Get DAOs for logged-in user
    * GET /user/daos
+   * 
+   * Backend returns: { tracking, newTracked, count, result }
+   * We extract: { count, result } for frontend consumption
    */
   getDaos: async () => {
-    return apiFetch<{
+    const response = await apiFetch<{
+      tracking: boolean;
+      newTracked: number;
       count: number;
-      result: {
-        imageUrl: string;
-        realmName: string;
-        governingTokenDepositAmount: string;
-      }[];
+      result: any[];
     }>("/user/daos", {
       method: "GET",
     });
+
+    // Extract count and result from top level (they are spread, not nested)
+    const count = response.count || 0;
+    const result = response.result || [];
+
+    return {
+      count,
+      result: result.map((dao) => ({
+        ...dao,
+        // Map 'name' to 'realmName' for frontend compatibility
+        realmName: dao.realmName || dao.name || "Unknown DAO",
+        // Generate imageUrl from realmName
+        imageUrl: dao.imageUrl || `/${(dao.realmName || dao.name || "unknown").toLowerCase().replace(/\s+/g, "-")}.png`,
+      })),
+    };
   },
 
   /**
@@ -315,7 +335,56 @@ export const userApi = {
       method: "GET",
     });
   },
+
+  /**
+   * Get tracked DAOs with summaries and governance power
+   * GET /user/tracked-with-summary
+   */
+  getTrackedDaosWithSummary: async () => {
+    return apiFetch<TrackedDaosWithSummaryResponse>("/user/tracked-with-summary", {
+      method: "GET",
+    });
+  },
 };
+
+// Response types for tracked DAOs with summary
+export interface PowerBreakdown {
+  total: string;
+  v1: string;
+  v2: string;
+  vsr: string;
+}
+
+export interface ProposalInfo {
+  exists: boolean;
+  latest?: string | null;
+}
+
+export interface DaoSummary {
+  realm: string;
+  realmName?: string;
+  realmOwner: string;
+  proposalCount: number;
+  status: "active" | "dead";
+  activeProposal?: ProposalInfo;
+  closedProposal?: ProposalInfo;
+  treasuryBalance: number;
+  communityMint?: string;
+  councilMint?: string;
+}
+
+export interface TrackedDaoWithSummary {
+  pubkey: string;
+  name: string;
+  summary: DaoSummary | null;
+  governancePower: string;
+  powerBreakdown: PowerBreakdown;
+}
+
+export interface TrackedDaosWithSummaryResponse {
+  count: number;
+  result: TrackedDaoWithSummary[];
+}
 
 // ============================================
 // DAOS ENDPOINTS

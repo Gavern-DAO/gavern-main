@@ -7,6 +7,8 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import DaoCard from "./dao-card";
 
+import { formatNumber } from "@/lib/utils";
+
 export interface WatchlistDao {
   id: string;
   daoName: string;
@@ -14,7 +16,7 @@ export interface WatchlistDao {
   proposals: number;
   treasuryBalance: string;
   image: string;
-  amountDetected: string;
+  governancePower?: string;
 }
 
 const DaoImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
@@ -66,20 +68,16 @@ const columns: ColumnDef<WatchlistDao>[] = [
       return (
         <div className="flex items-center justify-start gap-3">
           <DaoImage src={data.image} alt={data.daoName} />
-          {/* <Image
-            src={data.image}
-            width={48}
-            height={48}
-            alt={data.daoName}
-            className="h-full w-auto"
-          /> */}
           <h2 className="text-[#101828] dark:text-[#EDEDED] font-medium text-[1.25rem] leading-[1.5rem]">
             {data.daoName}
           </h2>
 
-          {data.amountDetected && (
-            <span className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] text-transparent bg-clip-text">
-              {data.amountDetected}
+          {data.governancePower && parseFloat(data.governancePower) > 0 && (
+            <span
+              className="self-center font-medium text-[14px] leading-[21px] bg-gradient-to-l from-[#22E9AD] to-[#9846FE] text-transparent bg-clip-text"
+              style={{ fontFamily: 'var(--font-geist-sans), Geist, sans-serif' }}
+            >
+              {formatNumber(Math.round(parseFloat(data.governancePower)))} Detected!
             </span>
           )}
         </div>
