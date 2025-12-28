@@ -20,6 +20,18 @@ export interface Dao {
   // Add other properties if they exist in the API response
 }
 
+export interface ApiDaoResult {
+  imageUrl?: string;
+  realmName?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface UserDaosResponse {
+  count: number;
+  result: ApiDaoResult[];
+}
+
 export interface TreasuryToken {
   mint: string;
   decimals: number;
@@ -258,7 +270,7 @@ export const userApi = {
   getDaosByWallet: async (wallet: string) => {
     const data = await apiFetch<{
       count: number;
-      result: any[];
+      result: ApiDaoResult[];
     }>(`/user/daos-user?wallet=${encodeURIComponent(wallet)}`, {
       method: "GET",
     });
@@ -284,7 +296,7 @@ export const userApi = {
       tracking: boolean;
       newTracked: number;
       count: number;
-      result: any[];
+      result: ApiDaoResult[];
     }>("/user/daos", {
       method: "GET",
     });

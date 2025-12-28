@@ -33,12 +33,12 @@ export default function SuccessfulWalletModal() {
           <DialogTitle className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold text-3xl md:text-4xl">
             Wallet Successfully connected.
           </DialogTitle>
-          <DialogDescription className="font-normal text-[#10182880] text-[18px] leading-relaxed">
+          <DialogDescription className="font-normal text-[#10182880] dark:text-[#A1A1A1] text-[18px] leading-relaxed">
             Checking for your DAOs involvement, and detecting your governance
             power in those DAOs too.
           </DialogDescription>
         </DialogHeader>
-        <section className="flex-1 flex flex-col items-center justify-center py-6 text-[#10182880] font-normal text-[16px]">
+        <section className="flex-1 flex flex-col items-center justify-center py-6 text-[#10182880] dark:text-[#A1A1A1] font-normal text-[16px]">
           <span>Please wait, It happens in seconds!</span>
           <span className="block bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent py-0 text-[128px] cursor-default font-medium">
             {countdown}

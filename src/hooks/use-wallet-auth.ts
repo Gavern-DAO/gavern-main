@@ -4,7 +4,7 @@ import bs58 from "bs58";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useAuthStore } from "@/store/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { authApi, userApi } from "@/lib/api";
+import { authApi, userApi, UserDaosResponse } from "@/lib/api";
 import { setAuthToken } from "@/lib/cookie";
 
 export const useWalletAuth = () => {
@@ -31,7 +31,7 @@ export const useWalletAuth = () => {
 
   const getDaosMutation = useMutation({
     mutationFn: userApi.getDaos,
-    onSuccess: (data: any) => {
+    onSuccess: (data: UserDaosResponse) => {
       // Cache the data for the modal to read
       queryClient.setQueryData(["daos"], data);
 

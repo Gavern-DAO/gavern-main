@@ -19,7 +19,7 @@ import SuccessfulWalletModal from "@/components/app/successful-wallet-modal";
 import DaosFoundModal from "@/components/app/daos-found-modal";
 import axios from "axios";
 import SkeletonTable from "@/components/app/skeleton-table";
-import { formatNumber } from "@/lib/utils";
+
 
 const Navbar = dynamic(() => import("@/components/app/navbar"), { ssr: false });
 
@@ -88,8 +88,21 @@ export default function Page() {
     enabled: isAuthenticated,
   });
 
+  // Fetch tracked DAOs with summaries and governance power in a single call
+  const { data: trackedDaosWithSummary, isLoading: isLoadingTrackedDaosWithSummary } = useQuery({
+    queryKey: ["trackedDaosWithSummary"],
+    queryFn: userApi.getTrackedDaosWithSummary,
+    enabled: isAuthenticated,
+  });
+
+  // Log trackedDaosWithSummary changes
+  useEffect(() => {
+    console.log("[Page] trackedDaosWithSummary changed:", trackedDaosWithSummary);
+    console.log("[Page] trackedDaosWithSummary isLoading:", isLoadingTrackedDaosWithSummary);
+  }, [trackedDaosWithSummary, isLoadingTrackedDaosWithSummary]);
+
   const { data: summarizedDaos, isLoading: isLoadingSummarizedDaos } = useQuery({
-    queryKey: ["summarizedDaos", allDaos, userDaos],
+    queryKey: ["summarizedDaos", allDaos, userDaos, trackedDaosWithSummary],
     queryFn: async () => {
       if (!allDaos) {
         return [];
@@ -109,24 +122,22 @@ export default function Page() {
       ];
 
       const userDaoPubkeys = userDaos?.result.map((dao) => dao.realmName) ?? [];
+      const trackedPubkeys = trackedDaosWithSummary?.result.map((dao) => dao.pubkey) ?? [];
 
-      const prioritizedDaos = [
-        ...allDaos.filter((dao) => userDaoPubkeys.includes(dao.name)),
-        ...allDaos.filter((dao) => !userDaoPubkeys.includes(dao.name)),
-      ].slice(0, 15);
+      // Construct a list of all preferred pubkeys that MUST be at the top
+      // Order: Tracked -> Priority List
+      const topTierPubkeys = Array.from(new Set([...trackedPubkeys, ...priorityPubkeys]));
 
-      const daoPubkeysToSummarize = prioritizedDaos.map((dao) => dao.pubkey);
+      // Remaining DAOs to fill the list, prioritized by user membership
+      const remainingDaos = allDaos.filter(dao => !topTierPubkeys.includes(dao.pubkey));
 
-      // Remove priority pubkeys if they exist in the list, then add them to the top
-      const filteredPubkeys = daoPubkeysToSummarize.filter(
-        (pubkey) => !priorityPubkeys.includes(pubkey)
-      );
-      // Ensure total is 15: priority pubkeys first, then fill remaining slots
-      const remainingSlots = 15 - priorityPubkeys.length;
-      const finalPubkeysToSummarize = [
-        ...priorityPubkeys,
-        ...filteredPubkeys.slice(0, remainingSlots),
-      ];
+      const memberDaos = remainingDaos.filter(dao => userDaoPubkeys.includes(dao.name));
+      const otherDaos = remainingDaos.filter(dao => !userDaoPubkeys.includes(dao.name));
+
+      const fillPubkeys = [...memberDaos, ...otherDaos].map(d => d.pubkey);
+
+      // Combine to form final list, capped at 15
+      const finalPubkeysToSummarize = [...topTierPubkeys, ...fillPubkeys].slice(0, 15);
 
       if (finalPubkeysToSummarize.length === 0) {
         return [];
@@ -161,18 +172,7 @@ export default function Page() {
     enabled: !!allDaos,
   });
 
-  // Fetch tracked DAOs with summaries and governance power in a single call
-  const { data: trackedDaosWithSummary, isLoading: isLoadingTrackedDaosWithSummary } = useQuery({
-    queryKey: ["trackedDaosWithSummary"],
-    queryFn: userApi.getTrackedDaosWithSummary,
-    enabled: isAuthenticated,
-  });
 
-  // Log trackedDaosWithSummary changes
-  useEffect(() => {
-    console.log("[Page] trackedDaosWithSummary changed:", trackedDaosWithSummary);
-    console.log("[Page] trackedDaosWithSummary isLoading:", isLoadingTrackedDaosWithSummary);
-  }, [trackedDaosWithSummary, isLoadingTrackedDaosWithSummary]);
 
   const { data: mainnetBeta, isLoading: isLoadingMainnetBeta } = useQuery({
     queryKey: ["mainnetBeta"],
@@ -266,6 +266,21 @@ export default function Page() {
       timeCompleted: dao.timeLeft,
     }));
 
+  const trackDaosData = useMemo(() => {
+    if (!trackedDaosWithSummary?.result) return allDaosData;
+
+    const trackedPubkeys = trackedDaosWithSummary.result.map((d) => d.pubkey);
+
+    return [...allDaosData].sort((a, b) => {
+      const aTracked = trackedPubkeys.includes(a.id);
+      const bTracked = trackedPubkeys.includes(b.id);
+
+      if (aTracked && !bTracked) return -1;
+      if (!aTracked && bTracked) return 1;
+      return 0;
+    });
+  }, [allDaosData, trackedDaosWithSummary]);
+
   return (
     <div className="space-y-0 md:space-y-4">
       {/* <HookStateDebugger /> */}
@@ -300,7 +315,7 @@ export default function Page() {
         (isLoadingTrackDaosTab ? (
           <SkeletonTable />
         ) : (
-          <TrackDaosTable data={allDaosData} />
+          <TrackDaosTable data={trackDaosData} />
         ))}
       {/* <Footer /> */}
 
