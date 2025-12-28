@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { getAuthToken, removeAuthToken } from "./cookie";
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://gavern-main-server-pdd3.onrender.com";
+  process.env.NEXT_PUBLIC_API_BASE_URL
 
 // Create axios instance with default config
 const axiosInstance = axios.create({

@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
 import { DataTable } from "./data-table";
-import { truncateAddress } from "@/lib/utils";
+import { formatNumber, truncateAddress } from "@/lib/utils";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MemberInfo, daosApi } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
@@ -93,7 +93,7 @@ const columns: ColumnDef<MemberInfo>[] = [
     ),
     cell({ row }) {
       const data = row.original;
-      return <span className="block text-center">{data.governancePower}</span>;
+      return <span className="block text-center">{formatNumber(data.governancePower)}</span>;
     },
   },
 ];

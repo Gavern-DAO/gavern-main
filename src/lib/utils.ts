@@ -37,3 +37,24 @@ export const mapProposalStatus = (status: string): ProposalStatus => {
       return "cancelled";
   }
 };
+
+export function formatNumber(value: number | string): string {
+  const num = typeof value === "string" ? parseFloat(value) : value;
+
+  if (isNaN(num)) return "0";
+
+  if (num >= 1000000000) {
+    return (num / 1000000000).toFixed(2).replace(/\.00$/, "") + "B";
+  }
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(2).replace(/\.00$/, "") + "M";
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(2).replace(/\.00$/, "") + "K";
+  }
+
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+}
