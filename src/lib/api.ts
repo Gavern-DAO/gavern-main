@@ -86,6 +86,19 @@ export interface MemberInfoResponse {
   members: MemberInfo[];
 }
 
+export interface TopActiveMember {
+  pubkey: string;
+  proposalsCreated: number;
+  votesCast: number;
+  votingPower: string;
+}
+
+export interface VoterTurnout {
+  totalMembers: number;
+  activeVoters: number;
+  inactiveVoters: number;
+}
+
 export type MemberCount = string;
 
 export type VoteCount = string;
@@ -343,6 +356,16 @@ export interface VoteCountParams {
   realmOwner: string;
 }
 
+export interface TopActiveMemberParams {
+  realm: string;
+  realmOwner: string;
+}
+
+export interface VoterTurnoutParams {
+  realm: string;
+  realmOwner: string;
+}
+
 export interface DaoSummaryOne {
   realm: string;
   realmOwner: string;
@@ -540,6 +563,34 @@ export const daosApi = {
         assignedAt: string;
       }[]
     >(`/daos/stored-roles/${daoPubkey}`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Get top active members for DAO
+   * GET /daos/top-active-members
+   */
+  getTopActiveMembers: async (params: TopActiveMemberParams) => {
+    const query = new URLSearchParams({
+      realm: params.realm,
+      realmOwner: params.realmOwner,
+    });
+    return apiFetch<TopActiveMember[]>(`/daos/top-active-members?${query.toString()}`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Get voter turnout for DAO
+   * GET /daos/vote-turnout
+   */
+  getVoterTurnout: async (params: VoterTurnoutParams) => {
+    const query = new URLSearchParams({
+      realm: params.realm,
+      realmOwner: params.realmOwner,
+    });
+    return apiFetch<VoterTurnout>(`/daos/vote-turnout?${query.toString()}`, {
       method: "GET",
     });
   },
