@@ -57,6 +57,12 @@ export const useWalletAuth = () => {
       // Cache the data for the modal to read
       queryClient.setQueryData(["daos"], data);
 
+      // Invalidate queries to ensure dashboard is fresh
+      queryClient.invalidateQueries({ queryKey: ["trackedDaos"] });
+      queryClient.invalidateQueries({ queryKey: ["trackedDaosWithSummary"] });
+      queryClient.invalidateQueries({ queryKey: ["userDaos"] });
+      queryClient.invalidateQueries({ queryKey: ["summarizedDaos"] });
+
       // Mark fetch as complete
       daoFetchComplete.current = true;
     },

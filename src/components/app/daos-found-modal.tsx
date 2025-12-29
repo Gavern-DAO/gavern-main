@@ -1,42 +1,34 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogClose,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { useWalletAuth } from "@/hooks/use-wallet-auth";
 import { useQueryClient } from "@tanstack/react-query";
-
-interface Dao {
-  imageUrl: string;
-  realmName: string;
-  governingTokenDepositAmount: string;
-}
-
-interface DaosData {
-  count: number;
-  result: Dao[];
-}
+import { UserDaosResponse } from "@/lib/api";
+import { formatNumber } from "@/lib/utils";
+import { XIcon } from "lucide-react";
 
 export default function DaosFoundModal() {
   const { daosFoundModalOpen, setDaosFoundModalOpen } = useWalletAuth();
   const queryClient = useQueryClient();
 
-  // Get cached data from the mutation (set in use-wallet-auth hook)
-  // This data was already fetched during the countdown phase
-  const cachedData = queryClient.getQueryData<DaosData>(["daos"]);
+  // Get cached data from the mutation
+  const cachedData = queryClient.getQueryData<UserDaosResponse>(["daos"]);
 
   const handleGoToDashboard = () => {
     setDaosFoundModalOpen(false);
   };
 
   // Use cached data, default to empty if not available
-  const finalDaosData: DaosData = cachedData || { count: 0, result: [] };
+  const finalDaosData: UserDaosResponse = cachedData || { count: 0, result: [] };
 
   // Don't render if modal is not open
   if (!daosFoundModalOpen) {
@@ -49,51 +41,107 @@ export default function DaosFoundModal() {
   return (
     <Dialog open={daosFoundModalOpen} onOpenChange={setDaosFoundModalOpen}>
       <DialogContent
-        className="bg-white w-screen max-w-6xl px-30 overflow-y-auto max-h-[90vh] [&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-thumb]:bg-[#010101]"
-        showCloseButton={true}
+        className="w-full sm:max-w-5xl sm:min-w-[1000px] sm:min-h-[517px] self-start space-x-0 space-y-0 pb-8 rounded-[32px] flex flex-col font-sans bg-white dark:bg-[#0A0A0A] border-none [&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-thumb]:bg-[#010101]"
+        showCloseButton={false}
       >
-        <DialogHeader className="flex flex-col gap-2">
-          <DialogTitle className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold text-3xl">
-            {hasDaos
-              ? `We Found ${count} DAO${count > 1 ? "s" : ""} associated with your wallet.`
-              : "No DAOs Found"}
-          </DialogTitle>
-          <DialogDescription className="font-normal text-[#101828B2] text-lg leading-[100%]">
-            {hasDaos
-              ? `This DAO${count > 1 ? "s" : ""} will be automatically added to your watchlist in the gavern dashboard.`
-              : "You can still explore and track other DAOs."}
-          </DialogDescription>
-        </DialogHeader>
+        <div className="relative flex flex-col w-full h-full">
+          {/* Close Button positioned at the far right, same line as heading */}
+          <DialogClose className="absolute top-12 right-12 md:right-20 z-50 text-[#10182880] dark:text-[#A1A1A1] hover:text-[#101828] dark:hover:text-white transition-colors">
+            <XIcon size={24} />
+          </DialogClose>
 
-        {hasDaos && (
-          <section className="flex flex-col items-center text-[#101828B2] font-medium text-base w-full gap-2">
-            {finalDaosData.result.map((dao, index) => (
-              <div key={index} className="flex justify-between w-full py-5">
-                <div className="flex items-center gap-2.5">
-                  <Image
-                    src={dao.imageUrl}
-                    alt={dao.realmName}
-                    width={48}
-                    height={48}
-                    className="rounded-full"
-                  />
-                  <h2>{dao.realmName}</h2>
+          <DialogHeader className="flex flex-col gap-3 pt-12 pl-12 md:pl-20 pr-24 md:pr-32 text-left sm:text-left">
+            <DialogTitle className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold text-[32px] leading-tight">
+              {hasDaos
+                ? `We Found ${count} DAO${count > 1 ? "s" : ""} associated with your wallet.`
+                : "No DAOs Found"}
+            </DialogTitle>
+            <DialogDescription className="font-normal text-[#10182880] dark:text-[#A1A1A1] text-[20px] leading-relaxed">
+              {hasDaos ? (
+                <>
+                  This DAO{count > 1 ? "s" : ""} will be automatically added to your{" "}
+                  <span className="text-[#101828] dark:text-white font-medium">watchlist</span> in the gavern
+                  dashboard.
+                </>
+              ) : (
+                "You can still explore and track other DAOs."
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <section className="flex-1 flex flex-col items-center px-12 md:px-20 py-8 w-full gap-1 overflow-y-auto max-h-[400px]">
+            {hasDaos && finalDaosData.result.map((dao: any, index: number) => {
+              // Priority: Symbol from metadata (if valid) > Realm Name (if valid)
+              const symbol = dao.tokenMetadata?.symbol;
+              const isValidSymbol = symbol && symbol !== "?" && symbol.trim() !== "";
+
+              const realmName = dao.realmName;
+              const isValidRealmName = realmName && realmName !== "?" && realmName.trim() !== "";
+
+              const tokenIdentifier = isValidSymbol ? symbol : (isValidRealmName ? realmName : "Tokens");
+
+              return (
+                <div
+                  key={index}
+                  className="flex justify-between items-center w-full py-6 border-b border-[#F0F0F0] dark:border-[#1A1A1A] last:border-0"
+                >
+                  <div className="flex items-center gap-[20px]">
+                    <div className="relative w-[48px] h-[48px] flex-shrink-0 bg-[#F9F9F9] dark:bg-[#1A1A1A] rounded-full overflow-hidden">
+                      <DaoImage src={dao.imageUrl} alt={dao.realmName} />
+                    </div>
+                    <h2 className="text-[20px] font-semibold text-[#101828] dark:text-white">
+                      {dao.realmName}
+                    </h2>
+                  </div>
+
+                  <span
+                    className="text-[14px] font-medium"
+                    style={{
+                      background: 'linear-gradient(270deg, #22E9AD 0%, #9846FE 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    {formatNumber(dao.governingTokenDepositAmount, 2)} {tokenIdentifier} Detected!
+                  </span>
                 </div>
-                <span className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent">
-                  {dao.governingTokenDepositAmount} Detected!
-                </span>
-              </div>
-            ))}
-          </section>
-        )}
+              );
+            })}
 
-        <Button
-          className="w-auto justify-self-center py-5.5 px-3 rounded-[5px] bg-[#010101] text-white"
-          onClick={handleGoToDashboard}
-        >
-          Go to Dashboard
-        </Button>
+            {!hasDaos && (
+              <div className="flex flex-col items-center justify-center py-10 text-[#10182880] dark:text-[#A1A1A1]">
+                <p>No governance activity detected for this wallet.</p>
+              </div>
+            )}
+          </section>
+
+          <div className="flex justify-center pt-4">
+            <Button
+              className="w-auto py-6 px-10 rounded-[12px] bg-[#010101] dark:bg-white text-white dark:text-[#010101] hover:opacity-90 transition-all font-medium text-lg"
+              onClick={handleGoToDashboard}
+            >
+              Go to Dashboard
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// Sub-component to handle image fallbacks correctly
+function DaoImage({ src, alt }: { src: string; alt: string }) {
+  const [imageError, setImageError] = useState(false);
+  const fallback = "/dao-1.png";
+
+  return (
+    <Image
+      src={imageError ? fallback : (src || fallback)}
+      alt={alt}
+      fill
+      className="rounded-full object-cover"
+      onError={() => setImageError(true)}
+    />
   );
 }

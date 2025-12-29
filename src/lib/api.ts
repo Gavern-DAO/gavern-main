@@ -13,19 +13,29 @@ const axiosInstance = axios.create({
 });
 
 // Types
+export interface TokenMetadata {
+  symbol: string;
+  name: string;
+  logoURI?: string;
+}
+
 export interface Dao {
   imageUrl: string;
   realmName: string;
   governingTokenDepositAmount: string;
-  // Add other properties if they exist in the API response
+  tokenMetadata?: TokenMetadata | null;
 }
+
 
 export interface ApiDaoResult {
   imageUrl?: string;
   realmName?: string;
   name?: string;
+  governingTokenDepositAmount?: string;
+  tokenMetadata?: TokenMetadata | null;
   [key: string]: unknown;
 }
+
 
 export interface UserDaosResponse {
   count: number;
@@ -318,7 +328,8 @@ export const userApi = {
         // Map 'name' to 'realmName' for frontend compatibility
         realmName: dao.realmName || dao.name || "Unknown DAO",
         // Generate imageUrl from realmName
-        imageUrl: dao.imageUrl || `/${(dao.realmName || dao.name || "unknown").toLowerCase().replace(/\s+/g, "-")}.png`,
+        imageUrl: dao.imageUrl || dao.tokenMetadata?.logoURI || `/${(dao.realmName || dao.name || "unknown").toLowerCase().replace(/\s+/g, "-")}.png`,
+        tokenMetadata: dao.tokenMetadata || null,
       })),
     };
   },

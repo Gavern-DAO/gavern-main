@@ -48,11 +48,9 @@ export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
     mutationFn: userApi.trackDao,
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["trackedDaos"] });
-      await queryClient.refetchQueries({ queryKey: ["trackedDaos"] });
-      await queryClient.refetchQueries({
-        queryKey: ["summarizedTrackedDaos"],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ["trackedDaosWithSummary"] });
+      queryClient.invalidateQueries({ queryKey: ["userDaos"] });
+      queryClient.invalidateQueries({ queryKey: ["summarizedDaos"] });
     },
   });
 
@@ -60,11 +58,9 @@ export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
     mutationFn: userApi.untrackDao,
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["trackedDaos"] });
-      await queryClient.refetchQueries({ queryKey: ["trackedDaos"] });
-      await queryClient.refetchQueries({
-        queryKey: ["summarizedTrackedDaos"],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ["trackedDaosWithSummary"] });
+      queryClient.invalidateQueries({ queryKey: ["userDaos"] });
+      queryClient.invalidateQueries({ queryKey: ["summarizedDaos"] });
     },
   });
 
@@ -178,7 +174,7 @@ export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
             <DaoCard
               key={dao.id}
               dao={dao}
-              onClick={() => {}}
+              onClick={() => { }}
               showSelect={isAuthenticated}
               isSelected={selectedDaos.includes(dao.id)}
               onSelectChange={handleCheckboxChange}
