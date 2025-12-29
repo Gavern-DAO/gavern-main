@@ -53,7 +53,7 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
 
   const topMembers = (topMembersData || []).slice(0, 3).map((member, index) => ({
     rank: index + 1,
-    name: "unnamed.sol",
+    name: member.snsId || member.pubkey.slice(0, 5),
     address: member.pubkey,
     proposals: member.proposalsCreated,
     votes: member.votesCast,

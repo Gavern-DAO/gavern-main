@@ -7,6 +7,7 @@ import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { DiscordIcon, NewTwitterIcon, TelegramIcon } from "@hugeicons/core-free-icons";
 import { useDelegateStats } from "@/hooks/use-delegate";
+import { useSnsId } from "@/hooks/use-sns";
 
 interface ProfileHeaderProps {
     pubkey?: string;
@@ -14,6 +15,7 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
     const { data: statsData, isLoading } = useDelegateStats(pubkey!);
+    const { snsId, isLoading: isSnsLoading } = useSnsId(pubkey);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const stats = useMemo(() => {
@@ -42,6 +44,12 @@ export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
         }
         return num.toString();
     };
+
+    const displayName = useMemo(() => {
+        if (isSnsLoading) return "...";
+        if (snsId) return snsId;
+        return pubkey ? `${pubkey.slice(0, 6)}...${pubkey.slice(-4)}` : "Unnamed";
+    }, [snsId, isSnsLoading, pubkey]);
 
     return (
         <div className="w-full max-w-[1200px] mx-auto mt-4 bg-white dark:bg-[#010101] pb-5">
@@ -86,7 +94,7 @@ export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
                             <div className="flex-1 max-w-2xl">
                                 <div className="flex items-center gap-2 mb-2">
                                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                        {pubkey ? `${pubkey.slice(0, 6)}...${pubkey.slice(-4)}` : "Icoder.sol"}
+                                        {displayName}
                                     </h1>
                                     <button className="text-gray-400 hover:text-gray-600 transition-colors">
                                         {/* Copy Icon */}
@@ -96,7 +104,7 @@ export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
                                     </button>
                                 </div>
                                 <p className="text-gray-600 dark:text-gray-400 text-[15px] leading-relaxed mb-4">
-                                    The official gavern profile of {pubkey ? `${pubkey.slice(0, 6)}...${pubkey.slice(-4)}` : "F1kz5...GkwT"}, providing an overview of delegate&apos;s governance activity.
+                                    The official gavern profile of {pubkey ? `${pubkey.slice(0, 6)}...${pubkey.slice(-4)}` : "F1kz5...Gkw7"}, providing an overview of delegate&apos;s governance activity.
                                 </p>
 
                                 {/* Socials & Actions */}

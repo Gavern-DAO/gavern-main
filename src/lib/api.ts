@@ -82,6 +82,7 @@ export interface MemberInfo {
   governancePower: string;
   proposalsCreated: number;
   votesCast: number;
+  snsId?: string | null;
 }
 
 export interface PaginationInfo {
@@ -103,6 +104,7 @@ export interface TopActiveMember {
   proposalsCreated: number;
   votesCast: number;
   votingPower: string;
+  snsId?: string | null;
 }
 
 export interface VoterTurnout {
