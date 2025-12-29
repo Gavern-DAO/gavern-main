@@ -20,6 +20,8 @@ import { useWalletAuth } from "@/hooks/use-wallet-auth";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { getAuthToken } from "@/lib/cookie";
+import DaoSearch from "./dao-search";
+
 
 // Auth state machine including signing-out as an internal buffer
 type AuthStatus = "signed-out" | "signing-in" | "signed-in" | "signing-out";
@@ -183,13 +185,8 @@ export default function Navbar() {
                         />
                     </Link>
                     <div className="ml-auto flex items-center gap-4">
-                        <Label className="hidden md:flex items-center">
-                            <CiSearch color="#909090" />
-                            <Input
-                                className="bg-transparent border-none outline-none shadow-none focus:outline-none focus:ring-0 px-0 dark:px-3 focus-visible:outline-0 focus-visible:ring-0 min-w-[353px] placeholder:text-[#909090] text-base leading-[24px] font-normal dark:bg-transparent"
-                                placeholder="Search for a DAO"
-                            />
-                        </Label>
+                        <DaoSearch />
+
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setTheme("light")}

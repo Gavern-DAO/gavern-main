@@ -113,8 +113,8 @@ const DaoCard: React.FC<DaoCardProps> = ({
           <p className="text-[#909090] dark:text-[#A1A1A1] text-nowrap">
             Dao Health:
           </p>
-          <p className="flex items-center gap-1.5">
-            <section
+          <div className="flex items-center gap-1.5">
+            <span
               className={`w-2 h-2 rounded-full ${dao.daoHealth === "Alive"
                 ? "bg-[#00AA09]"
                 : dao.daoHealth === "Dead"
@@ -125,7 +125,8 @@ const DaoCard: React.FC<DaoCardProps> = ({
             <span className="text-sm text-[#101828] dark:text-[#EDEDED]">
               {dao.daoHealth}
             </span>
-          </p>
+          </div>
+
         </div>
       </div>
     </div>
