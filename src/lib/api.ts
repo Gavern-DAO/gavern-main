@@ -218,6 +218,10 @@ export const authApi = {
         pendingEmail: string | null;
         emailVerificationOtp: string | null;
         emailVerificationExpires: string | null;
+        twitter: string | null;
+        telegram: string | null;
+        discord: string | null;
+        profilePictureUrl: string | null;
       };
       accessToken: string;
     }>("/auth/verify", {
@@ -357,6 +361,50 @@ export const userApi = {
   getTrackedDaosWithSummary: async () => {
     return apiFetch<TrackedDaosWithSummaryResponse>("/user/tracked-with-summary", {
       method: "GET",
+    });
+  },
+
+  /**
+   * Update user profile details
+   * PATCH /user/profile
+   */
+  updateProfile: async (data: {
+    twitter?: string;
+    telegram?: string;
+    discord?: string;
+    name?: string;
+  }) => {
+    return apiFetch<{
+      id: number;
+      walletAddress: string;
+      twitter: string | null;
+      telegram: string | null;
+      discord: string | null;
+      name: string | null;
+    }>("/user/profile", {
+      method: "PATCH",
+      data: data,
+    });
+  },
+
+  /**
+   * Upload user profile picture
+   * POST /user/upload-profile-picture
+   */
+  uploadProfilePicture: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return apiFetch<{
+      id: number;
+      walletAddress: string;
+      profilePictureUrl: string;
+    }>("/user/upload-profile-picture", {
+      method: "POST",
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
   },
 };
