@@ -1,7 +1,7 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import { WalletAdapterNetwork, WalletError } from "@solana/wallet-adapter-base";
 import { WalletProvider } from "@solana/wallet-adapter-react";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import { ConnectionProvider } from "@solana/wallet-adapter-react";
@@ -10,7 +10,6 @@ import { clusterApiUrl } from "@solana/web3.js";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import axios from "axios";
-
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,6 +66,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     [network]
   );
 
+  // Handle wallet errors gracefully (like blueshift)
+  const onWalletError = useCallback((error: WalletError) => {
+    console.error("Wallet error:", error);
+  }, []);
+
   if (!mounted) {
     return <>
       <div className="w-full h-screen dark:bg-[#010101] mx-auto rounded-[10px] border-b-[0.5px] dark:border-[.5px] dark:border-[#282828B2] py-20 flex items-center justify-center">
@@ -86,7 +90,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <ConnectionProvider endpoint={endpoint}>
-          <WalletProvider wallets={wallets} autoConnect={false}>
+          <WalletProvider wallets={wallets} onError={onWalletError} autoConnect>
             <WalletModalProvider>
               {children}
             </WalletModalProvider>

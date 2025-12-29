@@ -5,7 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useAuthStore } from "@/store/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authApi, userApi, UserDaosResponse } from "@/lib/api";
-import { setAuthToken } from "@/lib/cookie";
+import { setAuthToken, getAuthToken } from "@/lib/cookie";
 
 export const useWalletAuth = () => {
   const { connected, publicKey, disconnect, signMessage } = useWallet();
@@ -22,6 +22,28 @@ export const useWalletAuth = () => {
   } = useAuthStore();
 
   const queryClient = useQueryClient();
+
+  // Load auth state from cookie on mount
+  // Load auth state from cookie on mount
+  useEffect(() => {
+    const token = getAuthToken();
+    // Debug log to trace refresh behavior
+    console.log("[useWalletAuth] Auth Check:", {
+      tokenExists: !!token,
+      connected,
+      publicKey: publicKey?.toBase58(),
+      isAuthenticated
+    });
+
+    if (token && connected && publicKey && !isAuthenticated) {
+      console.log("[useWalletAuth] Restoring session from cookie");
+      setIsAuthenticated(true);
+    } else if (!token && isAuthenticated) {
+      // If no token exists but we think we are logged in, reset (e.g. cookie expired)
+      console.log("[useWalletAuth] Token missing, resetting auth state");
+      resetAuthState();
+    }
+  }, [connected, publicKey, isAuthenticated, setIsAuthenticated, resetAuthState]);
 
   // Track authentication state to prevent multiple attempts
   const isAuthInProgress = useRef(false);
@@ -91,7 +113,9 @@ export const useWalletAuth = () => {
     },
     onError: (err) => {
       console.error("❌ Auth failed:", err);
-      disconnect();
+      // Do NOT disconnect here - it causes an infinite loop with autoConnect.
+      // The wallet stays connected, but user is not authenticated.
+      // They can click "Connect Wallet" to retry manually.
       resetAuthState();
       isAuthInProgress.current = false;
     },
@@ -124,10 +148,10 @@ export const useWalletAuth = () => {
     }
   };
 
-  const handleDisconnect = () => {
+  const handleDisconnect = async () => {
     console.log("👋 Disconnecting wallet...");
 
-    disconnect();
+    await disconnect();
     setAuthToken("");
     resetAuthState();
     queryClient.clear();
