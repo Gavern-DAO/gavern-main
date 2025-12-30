@@ -1,16 +1,16 @@
 "use client";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import bs58 from "bs58";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useAuthStore } from "@/store/auth";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authApi, userApi } from "@/lib/api";
-import { setAuthToken } from "@/lib/cookie";
+import { setAuthToken, getAuthToken } from "@/lib/cookie";
 
 export const useWalletAuth = () => {
   const { connected, publicKey, disconnect, signMessage } = useWallet();
-  const { 
-    isAuthenticated, 
+  const {
+    isAuthenticated,
     setIsAuthenticated,
     successfulWalletModalOpen,
     setSuccessfulWalletModalOpen,
@@ -18,60 +18,58 @@ export const useWalletAuth = () => {
     setDaosFoundModalOpen,
     countdown,
     setCountdown,
-    resetAuthState, // ✅ Get reset function
+    resetAuthState,
   } = useAuthStore();
-  
+
   const queryClient = useQueryClient();
 
-  // ✅ Track authentication state to prevent multiple attempts
+  // Load auth state from cookie on mount
+  useEffect(() => {
+    const token = getAuthToken();
+    if (token && connected && publicKey && !isAuthenticated) {
+      console.log("[useWalletAuth] Restoring session from cookie");
+      setIsAuthenticated(true);
+    } else if (!token && isAuthenticated) {
+      console.log("[useWalletAuth] Token missing, resetting auth state");
+      resetAuthState();
+    }
+  }, [connected, publicKey, isAuthenticated, setIsAuthenticated, resetAuthState]);
+
+  // Track authentication state to prevent multiple attempts
   const isAuthInProgress = useRef(false);
 
-  const getDaosMutation = useMutation({
-    mutationFn: userApi.getDaos,
-    onSuccess: (data) => {
-      console.log("✅ DAOs fetched successfully:", data);
-      const daos = data.result.map((dao) => ({
-        ...dao,
-        imageUrl: `/${dao.realmName.toLowerCase().replace(/\s+/g, "-")}.png`,
-      }));
-      queryClient.setQueryData(["daos"], { count: daos.length, result: daos });
-
-      console.log("🔄 Closing SuccessfulWalletModal, opening DaosFoundModal");
-      setSuccessfulWalletModalOpen(false);
-      setDaosFoundModalOpen(true);
-    },
-    onError: (e: Error) => {
-      console.log("❌ Error Fetching Daos:", e);
-      console.log("🔄 Closing SuccessfulWalletModal");
-      setSuccessfulWalletModalOpen(false);
-
-      if (e.message === "This user doesn't belong to any DAO") {
-        console.log("🔄 Opening DaosFoundModal (no DAOs)");
-        setDaosFoundModalOpen(true);
-      }
-      queryClient.setQueryData(["daos"], { count: 0, result: [] });
-    },
+  // Shared Query: Deduplicates with the Page component using the same key
+  const userDaosQuery = useQuery({
+    queryKey: ["userDaos"],
+    queryFn: userApi.getDaos,
+    enabled: isAuthenticated,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  // Automatically invalidate other queries when userDaos successfully completes for the first time
+  useEffect(() => {
+    if (userDaosQuery.status === "success" && isAuthenticated) {
+      console.log("♻️ userDaos success -> Invalidating related dashboard queries");
+      queryClient.invalidateQueries({ queryKey: ["trackedDaos"] });
+      queryClient.invalidateQueries({ queryKey: ["trackedDaosWithSummary"] });
+      queryClient.invalidateQueries({ queryKey: ["summarizedDaos"] });
+    }
+  }, [userDaosQuery.status, isAuthenticated, queryClient]);
+
+  // Track completion status for the modal transition
 
   const authenticateMutation = useMutation({
     mutationFn: async () => {
       if (!publicKey || !signMessage) {
-        throw new Error(
-          "Wallet not ready - no public key or signMessage function"
-        );
+        throw new Error("Wallet not ready");
       }
-
-      console.log("📝 Fetching challenge...");
       const challenge = await authApi.requestChallenge({
         walletAddress: publicKey.toBase58(),
       });
-
-      console.log("✍️ Signing challenge...");
       const encoded = new TextEncoder().encode(challenge);
       const signature = await signMessage(encoded);
       const signatureString = bs58.encode(signature);
 
-      console.log("🔐 Verifying challenge...");
       return authApi.verifyChallenge({
         walletAddress: publicKey.toBase58(),
         challenge,
@@ -79,104 +77,84 @@ export const useWalletAuth = () => {
       });
     },
     onSuccess: (data) => {
-      console.log("✅ Auth success!");
       setAuthToken(data.accessToken);
       setIsAuthenticated(true);
-
-      console.log("🎉 Opening SuccessfulWalletModal");
       setSuccessfulWalletModalOpen(true);
       setCountdown(10);
-
       isAuthInProgress.current = false;
-
-      console.log("🔍 Starting DAOs fetch...");
-      getDaosMutation.mutate();
     },
     onError: (err) => {
       console.error("❌ Auth failed:", err);
-      disconnect();
-      resetAuthState(); // ✅ Reset all state on auth failure
+      resetAuthState();
       isAuthInProgress.current = false;
     },
+    retry: 0,
   });
 
-  const startAuthentication = async () => {
-    if (isAuthInProgress.current) {
-      console.log("⏸️ Authentication already in progress...");
-      return;
-    }
+  const startAuthentication = useCallback(async () => {
+    if (isAuthInProgress.current) return;
+    if (!connected || !publicKey || !signMessage) throw new Error("Wallet not ready");
 
-    if (!connected || !publicKey) {
-      console.warn("⚠️ Wallet not connected, please connect first");
-      throw new Error("Wallet not connected");
-    }
-
-    if (!signMessage) {
-      console.warn("⚠️ Wallet does not support message signing");
-      throw new Error("Sign message not supported");
-    }
-
-    console.log("🚀 Starting authentication process...");
     isAuthInProgress.current = true;
-
     try {
       await authenticateMutation.mutateAsync();
     } catch (error) {
       isAuthInProgress.current = false;
       throw error;
     }
-  };
+  }, [connected, publicKey, signMessage, authenticateMutation]);
 
-  const handleDisconnect = () => {
-    console.log("👋 Disconnecting wallet...");
-    
-    // ✅ 1. Disconnect wallet
-    disconnect();
-    
-    // ✅ 2. Clear auth token cookie
-    setAuthToken(""); // Clear the cookie
-    
-    // ✅ 3. Reset all Zustand auth state
+  const handleDisconnect = useCallback(async () => {
+    await disconnect();
+    setAuthToken("");
     resetAuthState();
-    
-    // ✅ 4. Clear React Query cache
     queryClient.clear();
-    
-    // ✅ 5. Reset auth progress flag
     isAuthInProgress.current = false;
-    
-    console.log("✅ Disconnect complete!");
-  };
+  }, [disconnect, resetAuthState, queryClient]);
 
-  // ✅ Auto-close SuccessfulWalletModal and open DaosFoundModal when countdown reaches 0
+  // Countdown timer effect
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (successfulWalletModalOpen && countdown > 0) {
       timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    } else if (successfulWalletModalOpen && countdown === 0) {
-      console.log("⏰ Countdown reached 0, forcing modal transition");
-      setSuccessfulWalletModalOpen(false);
-      setDaosFoundModalOpen(true);
     }
     return () => clearTimeout(timer);
-  }, [successfulWalletModalOpen, countdown, setSuccessfulWalletModalOpen, setDaosFoundModalOpen, setCountdown]);
+  }, [successfulWalletModalOpen, countdown, setCountdown]);
 
-  // ✅ Debug: Log modal state changes
+  // Transition effect: When countdown reaches 0 AND API fetch is complete, transition to DaosFoundModal
   useEffect(() => {
-    console.log("🔵 Modal State:", {
-      successfulWalletModalOpen,
-      daosFoundModalOpen,
-      countdown,
-      isAuthenticating: authenticateMutation.isPending,
-      isFetchingDaos: getDaosMutation.isPending,
-    });
-  }, [successfulWalletModalOpen, daosFoundModalOpen, countdown, authenticateMutation.isPending, getDaosMutation.isPending]);
+    if (successfulWalletModalOpen && countdown === 0) {
+      // Use queryClient.getQueryState to avoid stale closures/linting issues with status narrowing
+      const checkCompletion = () => {
+        const state = queryClient.getQueryState(["userDaos"]);
+        return state?.status === "success" || state?.status === "error";
+      };
+
+      if (checkCompletion()) {
+        console.log("⏰ Countdown is 0 & API complete -> Transitioning to DaosFoundModal");
+        setSuccessfulWalletModalOpen(false);
+        setDaosFoundModalOpen(true);
+      } else {
+        console.log("⏰ Countdown is 0 but API still pending -> Polling...");
+        const pollInterval = setInterval(() => {
+          if (checkCompletion()) {
+            console.log("⏰ API finally complete -> Transitioning to DaosFoundModal");
+            setSuccessfulWalletModalOpen(false);
+            setDaosFoundModalOpen(true);
+            clearInterval(pollInterval);
+          }
+        }, 200);
+        return () => clearInterval(pollInterval);
+      }
+    }
+  }, [successfulWalletModalOpen, countdown, setSuccessfulWalletModalOpen, setDaosFoundModalOpen, queryClient]);
 
   return {
     connected,
     publicKey,
     isAuthenticated,
     isAuthenticating: authenticateMutation.isPending,
+    isFetchingDaos: userDaosQuery.isLoading,
     startAuthentication,
     handleDisconnect,
     successfulWalletModalOpen,

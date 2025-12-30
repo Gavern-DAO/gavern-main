@@ -3,6 +3,7 @@
 import React from "react";
 import TryeasuryCard from "./treasury-card";
 import { daosApi } from "@/lib/api";
+import { formatNumber } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { TreasuryTabSkeleton } from "./skeleton-dao";
 
@@ -40,10 +41,7 @@ export default function Treasurytab({ realm, realmOwner }: TreasurytabProps) {
           DAO Assets{" "}
           <span className="text-[#101828B2] dark:text-[#A1A1A1] font-normal text-xs">
             ($
-            {treasuryInfo?.totalValue.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
+            {formatNumber(treasuryInfo?.totalValue || 0)}
             )
           </span>
         </h2>

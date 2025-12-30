@@ -5,7 +5,7 @@ import { DataTable } from "./data-table";
 import Image from "next/image";
 import { ArrowDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { userApi } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
 import { throttle } from "lodash";
@@ -34,6 +34,7 @@ export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
     queryKey: ["trackedDaos"],
     queryFn: userApi.getTrackedDaos,
     enabled: isAuthenticated,
+    placeholderData: keepPreviousData,
   });
 
   const [selectedDaos, setSelectedDaos] = useState<string[]>([]);
@@ -48,11 +49,9 @@ export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
     mutationFn: userApi.trackDao,
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["trackedDaos"] });
-      await queryClient.refetchQueries({ queryKey: ["trackedDaos"] });
-      await queryClient.refetchQueries({
-        queryKey: ["summarizedTrackedDaos"],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ["trackedDaosWithSummary"] });
+      queryClient.invalidateQueries({ queryKey: ["userDaos"] });
+      queryClient.invalidateQueries({ queryKey: ["summarizedDaos"] });
     },
   });
 
@@ -60,11 +59,9 @@ export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
     mutationFn: userApi.untrackDao,
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["trackedDaos"] });
-      await queryClient.refetchQueries({ queryKey: ["trackedDaos"] });
-      await queryClient.refetchQueries({
-        queryKey: ["summarizedTrackedDaos"],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ["trackedDaosWithSummary"] });
+      queryClient.invalidateQueries({ queryKey: ["userDaos"] });
+      queryClient.invalidateQueries({ queryKey: ["summarizedDaos"] });
     },
   });
 
@@ -178,7 +175,7 @@ export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
             <DaoCard
               key={dao.id}
               dao={dao}
-              onClick={() => {}}
+              onClick={() => { }}
               showSelect={isAuthenticated}
               isSelected={selectedDaos.includes(dao.id)}
               onSelectChange={handleCheckboxChange}

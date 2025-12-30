@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
 import { DataTable } from "./data-table";
-import { truncateAddress } from "@/lib/utils";
+import { formatNumber, truncateAddress } from "@/lib/utils";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MemberInfo, daosApi } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
@@ -40,7 +40,10 @@ const columns: ColumnDef<MemberInfo>[] = [
             className="rounded-full w-8 h-8 md:w-9 md:h-9"
           />
           <div className="flex flex-col gap-0.5 min-w-0">
-            <h2 className="text-[#101828] dark:text-[#EDEDED] text-xs md:text-sm font-medium truncate">
+            <h3 className="text-[#101828] dark:text-white text-sm font-medium truncate leading-tight">
+              {data.snsId || data.member.slice(0, 5)}
+            </h3>
+            <h2 className="text-[#101828B2] dark:text-[#A1A1A1] text-xs font-normal truncate">
               {truncateAddress(data.member)}
             </h2>
           </div>
@@ -93,7 +96,7 @@ const columns: ColumnDef<MemberInfo>[] = [
     ),
     cell({ row }) {
       const data = row.original;
-      return <span className="block text-center">{data.governancePower}</span>;
+      return <span className="block text-center">{formatNumber(data.governancePower)}</span>;
     },
   },
 ];
@@ -172,7 +175,11 @@ export default function DaoMembers({
         const existingPower = parseFloat(existingMember.governancePower) || 0;
         const councilPower = parseFloat(member.governancePower) || 0;
         existingMember.governancePower = (existingPower + councilPower).toString();
-        // Keep delegator from community (or could be OR logic, but keeping community for now)
+        // Keep delegator from community
+        // Ensure SNS ID is preserved if available in either record
+        if (!existingMember.snsId && member.snsId) {
+          existingMember.snsId = member.snsId;
+        }
       } else {
         // New member from council
         memberMap.set(member.member, { ...member });

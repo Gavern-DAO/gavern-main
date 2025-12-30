@@ -1,20 +1,30 @@
 "use client"
 import { useState, useMemo } from "react";
 import ShareProfileModal from "./share-profile-modal";
+import EditProfileModal from "./edit-profile-modal";
 
 import Image from "next/image";
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { DiscordIcon, NewTwitterIcon, TelegramIcon } from "@hugeicons/core-free-icons";
 import { useDelegateStats } from "@/hooks/use-delegate";
+import { useSnsId } from "@/hooks/use-sns";
+import { useWalletAuth } from "@/hooks/use-wallet-auth";
+import { Copy01Icon, PencilEdit02Icon, DiscordIcon, NewTwitterIcon, TelegramIcon, Tick01Icon } from "@hugeicons/core-free-icons";
 
 interface ProfileHeaderProps {
     pubkey?: string;
 }
 
 export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
-    const { data: statsData, isLoading } = useDelegateStats(pubkey!);
+    const { data: statsData, isLoading, isFetching } = useDelegateStats(pubkey!);
+    const { snsId, isLoading: isSnsLoading } = useSnsId(pubkey);
+    const { publicKey } = useWalletAuth();
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+
+    const isOwner = useMemo(() => {
+        return publicKey?.toBase58() === pubkey;
+    }, [publicKey, pubkey]);
 
     const stats = useMemo(() => {
         if (!statsData) {
@@ -43,6 +53,23 @@ export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
         return num.toString();
     };
 
+    const [isCopied, setIsCopied] = useState(false);
+
+    const handleCopy = () => {
+        if (pubkey) {
+            navigator.clipboard.writeText(pubkey);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 500);
+        }
+    };
+
+    const displayName = useMemo(() => {
+        if (isSnsLoading) return "...";
+        if (statsData?.name) return statsData.name;
+        if (snsId) return snsId;
+        return pubkey ? `${pubkey.slice(0, 6)}...${pubkey.slice(-4)}` : "Unnamed";
+    }, [snsId, isSnsLoading, pubkey, statsData?.name]);
+
     return (
         <div className="w-full max-w-[1200px] mx-auto mt-4 bg-white dark:bg-[#010101] pb-5">
             {/* Banner Area with Blur */}
@@ -66,16 +93,30 @@ export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
                 <div className="flex flex-col gap-4">
 
                     {/* Profile Picture - Overlapping */}
-                    <div className="-mt-16 md:-mt-20 shrink-0 z-10 w-fit -ml-4">
-                        <div className="w-32 h-32 md:w-36 md:h-36 rounded-full border-4 border-white dark:border-[#010101] overflow-hidden bg-white dark:bg-black shadow-sm ring-1 ring-gray-100/50 dark:ring-white/10">
+                    <div className="-mt-16 md:-mt-20 shrink-0 z-10 w-fit -ml-4 relative group">
+                        {/* Animated Loading Border */}
+                        {isFetching && (
+                            <div className="absolute -inset-[3px] rounded-full loading-gradient-border animate-spin-slow" />
+                        )}
+
+                        <div className="relative w-32 h-32 md:w-36 md:h-36 rounded-full border-4 border-white dark:border-[#010101] overflow-hidden bg-white dark:bg-black shadow-sm ring-1 ring-gray-100/50 dark:ring-white/10 z-10">
                             <Image
-                                src="/icoder.png"
-                                alt="Icoder.sol"
+                                src={statsData?.profilePictureUrl || "/icoder.png"}
+                                alt={displayName}
                                 width={144}
                                 height={144}
-                                className="w-full h-full object-cover"
+                                className={`w-full h-full object-cover ${isFetching ? "opacity-50 blur-[1px]" : ""} transition-all duration-300`}
                             />
                         </div>
+                        {/* Edit Button overlay - only show for owner */}
+                        {isOwner && (
+                            <button
+                                onClick={() => setIsEditProfileModalOpen(true)}
+                                className="absolute bottom-1 right-1 md:bottom-2 md:right-2 w-8 h-8 md:w-10 md:h-10 bg-white dark:bg-[#171717] border border-gray-200 dark:border-[#282828B2] rounded-full flex items-center justify-center shadow-lg text-gray-700 dark:text-gray-300 hover:scale-110 active:scale-95 transition-all cursor-pointer z-20"
+                            >
+                                <HugeiconsIcon icon={PencilEdit02Icon} size={18} />
+                            </button>
+                        )}
                     </div>
 
                     {/* Info Area */}
@@ -83,37 +124,84 @@ export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
                         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-end gap-6">
 
                             {/* Left Column: Details */}
-                            <div className="flex-1 max-w-2xl">
-                                <div className="flex items-center gap-2 mb-2">
+                            <div className="flex-1 max-max-2xl">
+                                <div className="flex items-center gap-2 mb-2 relative">
                                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                        {pubkey ? `${pubkey.slice(0, 6)}...${pubkey.slice(-4)}` : "Icoder.sol"}
+                                        {displayName}
                                     </h1>
-                                    <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                                        {/* Copy Icon */}
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5" />
-                                        </svg>
-                                    </button>
+                                    <div className="relative group/copy">
+                                        {isCopied && (
+                                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold rounded shadow-lg animate-in fade-in slide-in-from-bottom-1 duration-200 whitespace-nowrap z-30">
+                                                Copied!
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black dark:border-t-white" />
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={handleCopy}
+                                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1"
+                                        >
+                                            <HugeiconsIcon
+                                                icon={isCopied ? Tick01Icon : Copy01Icon}
+                                                size={18}
+                                                className={isCopied ? "text-green-500" : ""}
+                                            />
+                                        </button>
+                                    </div>
                                 </div>
                                 <p className="text-gray-600 dark:text-gray-400 text-[15px] leading-relaxed mb-4">
-                                    The official gavern profile of {pubkey ? `${pubkey.slice(0, 6)}...${pubkey.slice(-4)}` : "F1kz5...GkwT"}, providing an overview of delegate&apos;s governance activity.
+                                    The official gavern profile of {pubkey ? `${pubkey.slice(0, 6)}...${pubkey.slice(-4)}` : "F1kz5...Gkw7"}, providing an overview of delegate&apos;s governance activity.
                                 </p>
 
                                 {/* Socials & Actions */}
                                 <div className="flex items-center gap-4 mb-6">
                                     {/* X (Twitter) */}
-                                    <Link href="#" className="text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                                    {statsData?.twitter ? (
+                                        <Link
+                                            href={`https://x.com/${statsData.twitter.replace('@', '')}`}
+                                            target="_blank"
+                                            className="text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                                        >
+                                            <HugeiconsIcon icon={NewTwitterIcon} />
+                                        </Link>
+                                    ) : (
+                                        <div className="text-gray-300 dark:text-gray-700 cursor-not-allowed">
+                                            <HugeiconsIcon icon={NewTwitterIcon} />
+                                        </div>
+                                    )}
 
-                                        <HugeiconsIcon icon={NewTwitterIcon} />
-                                    </Link>
                                     {/* Discord */}
-                                    <Link href="#" className="text-gray-400 hover:text-[#5865F2] transition-colors">
-                                        <HugeiconsIcon icon={DiscordIcon} />
-                                    </Link>
+                                    {statsData?.discord ? (
+                                        <Link
+                                            href="#"
+                                            className="text-gray-400 hover:text-[#5865F2] transition-colors"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                navigator.clipboard.writeText(statsData.discord!);
+                                                alert("Discord username copied to clipboard!");
+                                            }}
+                                        >
+                                            <HugeiconsIcon icon={DiscordIcon} />
+                                        </Link>
+                                    ) : (
+                                        <div className="text-gray-300 dark:text-gray-700 cursor-not-allowed">
+                                            <HugeiconsIcon icon={DiscordIcon} />
+                                        </div>
+                                    )}
+
                                     {/* Telegram */}
-                                    <Link href="#" className="text-gray-400 hover:text-[#26A5E4] transition-colors">
-                                        <HugeiconsIcon icon={TelegramIcon} />
-                                    </Link>
+                                    {statsData?.telegram ? (
+                                        <Link
+                                            href={`https://t.me/${statsData.telegram.replace('@', '')}`}
+                                            target="_blank"
+                                            className="text-gray-400 hover:text-[#26A5E4] transition-colors"
+                                        >
+                                            <HugeiconsIcon icon={TelegramIcon} />
+                                        </Link>
+                                    ) : (
+                                        <div className="text-gray-300 dark:text-gray-700 cursor-not-allowed">
+                                            <HugeiconsIcon icon={TelegramIcon} />
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Stats */}
@@ -192,6 +280,18 @@ export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
             <ShareProfileModal
                 open={isShareModalOpen}
                 onOpenChange={setIsShareModalOpen}
+                pubkey={pubkey}
+            />
+
+            <EditProfileModal
+                open={isEditProfileModalOpen}
+                onOpenChange={setIsEditProfileModalOpen}
+                initialData={{
+                    twitter: statsData?.twitter,
+                    telegram: statsData?.telegram,
+                    discord: statsData?.discord,
+                    profilePictureUrl: statsData?.profilePictureUrl,
+                }}
                 pubkey={pubkey}
             />
         </div>

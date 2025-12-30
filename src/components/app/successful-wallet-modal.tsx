@@ -24,23 +24,25 @@ export default function SuccessfulWalletModal() {
       onOpenChange={setSuccessfulWalletModalOpen}
     >
       <DialogContent
-        className="w-screen max-w-4xl self-start space-x-0 space-y-0 pb-4"
+        className="w-full sm:max-w-5xl sm:min-w-[1000px] self-start p-0 pb-10 rounded-[32px] flex flex-col font-sans"
         showCloseButton={false}
-      // ✅ Remove z-10, let Dialog handle z-index (usually z-50 by default)
-      // ✅ Add forceMount to ensure it renders immediately
       >
-        <DialogHeader className="flex flex-col gap-2">
-          <DialogTitle className="bg-gradient-to-r from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold text-3xl">
+        <DialogHeader className="flex flex-col gap-3 pt-12 pl-16 md:pl-24 pr-10 text-left sm:text-left">
+          <DialogTitle className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold text-3xl md:text-4xl">
             Wallet Successfully connected.
           </DialogTitle>
-          <DialogDescription className="font-normal text-[#101828B2] text-lg leading-[100%]">
+          <DialogDescription className="font-normal text-[#10182880] dark:text-[#A1A1A1] text-[18px] leading-relaxed">
             Checking for your DAOs involvement, and detecting your governance
             power in those DAOs too.
           </DialogDescription>
         </DialogHeader>
-        <section className="flex flex-col items-center py-12 text-[#101828B2] font-medium text-base">
+
+        {/* End-to-end thin line 30px after description */}
+        <div className="w-full border-t border-[#E7E7E7] dark:border-[#1A1A1A] mt-[30px]" />
+
+        <section className="flex-1 flex flex-col items-center justify-center py-6 text-[#10182880] dark:text-[#A1A1A1] font-normal text-[16px]">
           <span>Please wait, It happens in seconds!</span>
-          <span className="block bg-gradient-to-r from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent py-3.5 text-[128px] cursor-pointer">
+          <span className="block bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent py-0 text-[128px] cursor-default font-medium">
             {countdown}
           </span>
           <span>To go!</span>

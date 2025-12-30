@@ -64,4 +64,9 @@ export interface DelegateStatsResponse {
   totalProposalsCreated: number;
   totalVotesCast: number;
   totalDelegationsReceived: number;
+  twitter?: string;
+  telegram?: string;
+  discord?: string;
+  name?: string;
+  profilePictureUrl?: string;
 }

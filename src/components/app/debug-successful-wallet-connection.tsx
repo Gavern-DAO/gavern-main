@@ -13,7 +13,7 @@ export default function DebugSuccessfulWalletModal() {
             className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
             style={{ zIndex: 9999 }}
         >
-            <div className="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 shadow-2xl">
+            <div className="bg-white rounded-lg p-8 max-w-5xl w-full mx-4 shadow-2xl">
                 <h2 className="bg-gradient-to-r from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold text-3xl mb-4">
                     Wallet Successfully connected.
                 </h2>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { DelegateActivity as DelegateActivityType } from "@/types/delegate";
+import { formatNumber } from "@/lib/utils";
 
 interface DelegateActivityProps {
     data: DelegateActivityType[];
@@ -56,7 +57,7 @@ const DelegateActivity = ({ data, daoImageMap }: DelegateActivityProps) => {
                             <div className="flex flex-col md:block w-auto md:w-40 text-left md:text-right col-span-2 md:col-span-1 border-t md:border-0 dark:border-[#282828] pt-2 md:pt-0 mt-2 md:mt-0">
                                 <span className="md:hidden text-xs text-gray-500 dark:text-gray-500 mb-1">Governance Power</span>
                                 <span className="font-(family-name:--font-geist-sans) font-normal text-[16px] leading-[24px] tracking-[0] text-[#101828] dark:text-gray-200">
-                                    {dao.governancePower}
+                                    {formatNumber(dao.governancePower)}
                                 </span>
                             </div>
                         </div>

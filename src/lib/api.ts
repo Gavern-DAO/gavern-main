@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { getAuthToken, removeAuthToken } from "./cookie";
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://gavern-main-server-pdd3.onrender.com";
+  process.env.NEXT_PUBLIC_API_BASE_URL
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -13,11 +13,33 @@ const axiosInstance = axios.create({
 });
 
 // Types
+export interface TokenMetadata {
+  symbol: string;
+  name: string;
+  logoURI?: string;
+}
+
 export interface Dao {
   imageUrl: string;
   realmName: string;
   governingTokenDepositAmount: string;
-  // Add other properties if they exist in the API response
+  tokenMetadata?: TokenMetadata | null;
+}
+
+
+export interface ApiDaoResult {
+  imageUrl?: string;
+  realmName?: string;
+  name?: string;
+  governingTokenDepositAmount?: string;
+  tokenMetadata?: TokenMetadata | null;
+  [key: string]: unknown;
+}
+
+
+export interface UserDaosResponse {
+  count: number;
+  result: ApiDaoResult[];
 }
 
 export interface TreasuryToken {
@@ -70,6 +92,7 @@ export interface MemberInfo {
   governancePower: string;
   proposalsCreated: number;
   votesCast: number;
+  snsId?: string | null;
 }
 
 export interface PaginationInfo {
@@ -84,6 +107,20 @@ export interface PaginationInfo {
 export interface MemberInfoResponse {
   pagination: PaginationInfo;
   members: MemberInfo[];
+}
+
+export interface TopActiveMember {
+  pubkey: string;
+  proposalsCreated: number;
+  votesCast: number;
+  votingPower: string;
+  snsId?: string | null;
+}
+
+export interface VoterTurnout {
+  totalMembers: number;
+  activeVoters: number;
+  inactiveVoters: number;
 }
 
 export type MemberCount = string;
@@ -191,6 +228,10 @@ export const authApi = {
         pendingEmail: string | null;
         emailVerificationOtp: string | null;
         emailVerificationExpires: string | null;
+        twitter: string | null;
+        telegram: string | null;
+        discord: string | null;
+        profilePictureUrl: string | null;
       };
       accessToken: string;
     }>("/auth/verify", {
@@ -243,33 +284,54 @@ export const userApi = {
    * GET /user/daos-user
    */
   getDaosByWallet: async (wallet: string) => {
-    return apiFetch<{
+    const data = await apiFetch<{
       count: number;
-      result: {
-        imageUrl: string;
-        realmName: string;
-        governingTokenDepositAmount: string;
-      }[];
+      result: ApiDaoResult[];
     }>(`/user/daos-user?wallet=${encodeURIComponent(wallet)}`, {
       method: "GET",
     });
+
+    return {
+      ...data,
+      result: (data.result || []).map((dao) => ({
+        ...dao,
+        imageUrl: dao.imageUrl || `/${(dao.realmName || "unknown").toLowerCase().replace(/\s+/g, "-")}.png`,
+      })),
+    };
   },
 
   /**
    * Get DAOs for logged-in user
    * GET /user/daos
+   * 
+   * Backend returns: { tracking, newTracked, count, result }
+   * We extract: { count, result } for frontend consumption
    */
   getDaos: async () => {
-    return apiFetch<{
+    const response = await apiFetch<{
+      tracking: boolean;
+      newTracked: number;
       count: number;
-      result: {
-        imageUrl: string;
-        realmName: string;
-        governingTokenDepositAmount: string;
-      }[];
+      result: ApiDaoResult[];
     }>("/user/daos", {
       method: "GET",
     });
+
+    // Extract count and result from top level (they are spread, not nested)
+    const count = response.count || 0;
+    const result = response.result || [];
+
+    return {
+      count,
+      result: result.map((dao) => ({
+        ...dao,
+        // Map 'name' to 'realmName' for frontend compatibility
+        realmName: dao.realmName || dao.name || "Unknown DAO",
+        // Generate imageUrl from realmName
+        imageUrl: dao.imageUrl || dao.tokenMetadata?.logoURI || `/${(dao.realmName || dao.name || "unknown").toLowerCase().replace(/\s+/g, "-")}.png`,
+        tokenMetadata: dao.tokenMetadata || null,
+      })),
+    };
   },
 
   /**
@@ -302,7 +364,100 @@ export const userApi = {
       method: "GET",
     });
   },
+
+  /**
+   * Get tracked DAOs with summaries and governance power
+   * GET /user/tracked-with-summary
+   */
+  getTrackedDaosWithSummary: async () => {
+    return apiFetch<TrackedDaosWithSummaryResponse>("/user/tracked-with-summary", {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Update user profile details
+   * PATCH /user/profile
+   */
+  updateProfile: async (data: {
+    twitter?: string;
+    telegram?: string;
+    discord?: string;
+    name?: string;
+  }) => {
+    return apiFetch<{
+      id: number;
+      walletAddress: string;
+      twitter: string | null;
+      telegram: string | null;
+      discord: string | null;
+      name: string | null;
+    }>("/user/profile", {
+      method: "PATCH",
+      data: data,
+    });
+  },
+
+  /**
+   * Upload user profile picture
+   * POST /user/upload-profile-picture
+   */
+  uploadProfilePicture: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return apiFetch<{
+      id: number;
+      walletAddress: string;
+      profilePictureUrl: string;
+    }>("/user/upload-profile-picture", {
+      method: "POST",
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
 };
+
+// Response types for tracked DAOs with summary
+export interface PowerBreakdown {
+  total: string;
+  v1: string;
+  v2: string;
+  vsr: string;
+}
+
+export interface ProposalInfo {
+  exists: boolean;
+  latest?: string | null;
+}
+
+export interface DaoSummary {
+  realm: string;
+  realmName?: string;
+  realmOwner: string;
+  proposalCount: number;
+  status: "active" | "dead";
+  activeProposal?: ProposalInfo;
+  closedProposal?: ProposalInfo;
+  treasuryBalance: number;
+  communityMint?: string;
+  councilMint?: string;
+}
+
+export interface TrackedDaoWithSummary {
+  pubkey: string;
+  name: string;
+  summary: DaoSummary | null;
+  governancePower: string;
+  powerBreakdown: PowerBreakdown;
+}
+
+export interface TrackedDaosWithSummaryResponse {
+  count: number;
+  result: TrackedDaoWithSummary[];
+}
 
 // ============================================
 // DAOS ENDPOINTS
@@ -339,6 +494,16 @@ export interface MemberCountParams {
 }
 
 export interface VoteCountParams {
+  realm: string;
+  realmOwner: string;
+}
+
+export interface TopActiveMemberParams {
+  realm: string;
+  realmOwner: string;
+}
+
+export interface VoterTurnoutParams {
   realm: string;
   realmOwner: string;
 }
@@ -540,6 +705,34 @@ export const daosApi = {
         assignedAt: string;
       }[]
     >(`/daos/stored-roles/${daoPubkey}`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Get top active members for DAO
+   * GET /daos/top-active-members
+   */
+  getTopActiveMembers: async (params: TopActiveMemberParams) => {
+    const query = new URLSearchParams({
+      realm: params.realm,
+      realmOwner: params.realmOwner,
+    });
+    return apiFetch<TopActiveMember[]>(`/daos/top-active-members?${query.toString()}`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Get voter turnout for DAO
+   * GET /daos/vote-turnout
+   */
+  getVoterTurnout: async (params: VoterTurnoutParams) => {
+    const query = new URLSearchParams({
+      realm: params.realm,
+      realmOwner: params.realmOwner,
+    });
+    return apiFetch<VoterTurnout>(`/daos/vote-turnout?${query.toString()}`, {
       method: "GET",
     });
   },

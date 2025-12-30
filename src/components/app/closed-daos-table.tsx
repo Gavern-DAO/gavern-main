@@ -16,6 +16,7 @@ export interface IClosedDao {
   isActive: boolean;
   timeCompleted?: string | null;
   image: string;
+  governancePower?: string;
 }
 
 const DaoImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
@@ -174,7 +175,7 @@ export default function ClosedDaosTable({ data }: { data: IClosedDao[] }) {
           <div className="text-center py-20 text-[#909090]">There’s no DAO.</div>
         ) : (
           data.map((dao) => (
-            <DaoCard key={dao.id} dao={dao} onClick={() => handleRowClick(dao)} showClosed/>
+            <DaoCard key={dao.id} dao={dao} onClick={() => handleRowClick(dao)} showClosed />
           ))
         )}
         {data.length > 0 && (

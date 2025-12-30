@@ -17,6 +17,7 @@ export interface IAllDao {
   isActive?: boolean;
   timeLeft?: string | null;
   image: string;
+  governancePower?: string;
 }
 
 

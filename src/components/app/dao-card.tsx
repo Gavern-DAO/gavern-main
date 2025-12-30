@@ -4,6 +4,7 @@ import { IAllDao } from "./all-daos-table";
 import { IClosedDao } from "./closed-daos-table";
 import DaoImage from "./dao-image";
 import { Checkbox } from "@/components/ui/checkbox";
+import { formatNumber } from "@/lib/utils";
 
 interface DaoCardProps {
   dao: IAllDao | IClosedDao;
@@ -55,9 +56,19 @@ const DaoCard: React.FC<DaoCardProps> = ({
           )}
           <DaoImage src={dao.image} alt={dao.daoName} />
           <div className="space-y-1">
-            <h3 className="text-[#101828] dark:text-[#EDEDED] font-medium text-sm">
-              {dao.daoName}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-[#101828] dark:text-[#EDEDED] font-medium text-sm">
+                {dao.daoName}
+              </h3>
+              {dao.governancePower && parseFloat(dao.governancePower) > 0 && (
+                <span
+                  className="font-medium text-[10px] bg-gradient-to-l from-[#22E9AD] to-[#9846FE] text-transparent bg-clip-text"
+                  style={{ fontFamily: 'var(--font-geist-sans), Geist, sans-serif' }}
+                >
+                  {formatNumber(Math.round(parseFloat(dao.governancePower)))} Detected!
+                </span>
+              )}
+            </div>
             {dao.isActive && (
               <div className="flex items-center gap-2">
                 <span className="inline-block py-1 px-2 border rounded-full border-[#75FA7C] bg-[#00D70B1F] text-[#00BF0A] text-[8px] font-medium">
@@ -102,20 +113,20 @@ const DaoCard: React.FC<DaoCardProps> = ({
           <p className="text-[#909090] dark:text-[#A1A1A1] text-nowrap">
             Dao Health:
           </p>
-          <p className="flex items-center gap-1.5">
-            <section
-              className={`w-2 h-2 rounded-full ${
-                dao.daoHealth === "Alive"
-                  ? "bg-[#00AA09]"
-                  : dao.daoHealth === "Dead"
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`w-2 h-2 rounded-full ${dao.daoHealth === "Alive"
+                ? "bg-[#00AA09]"
+                : dao.daoHealth === "Dead"
                   ? "bg-[#D70000]"
                   : "bg-[#FFD700]"
-              }`}
+                }`}
             />
             <span className="text-sm text-[#101828] dark:text-[#EDEDED]">
               {dao.daoHealth}
             </span>
-          </p>
+          </div>
+
         </div>
       </div>
     </div>
