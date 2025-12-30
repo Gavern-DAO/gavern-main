@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import bs58 from "bs58";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useAuthStore } from "@/store/auth";
@@ -57,7 +57,6 @@ export const useWalletAuth = () => {
   }, [userDaosQuery.status, isAuthenticated, queryClient]);
 
   // Track completion status for the modal transition
-  const daoFetchComplete = userDaosQuery.status === "success" || userDaosQuery.status === "error";
 
   const authenticateMutation = useMutation({
     mutationFn: async () => {
@@ -89,9 +88,10 @@ export const useWalletAuth = () => {
       resetAuthState();
       isAuthInProgress.current = false;
     },
+    retry: 0,
   });
 
-  const startAuthentication = async () => {
+  const startAuthentication = useCallback(async () => {
     if (isAuthInProgress.current) return;
     if (!connected || !publicKey || !signMessage) throw new Error("Wallet not ready");
 
@@ -102,15 +102,15 @@ export const useWalletAuth = () => {
       isAuthInProgress.current = false;
       throw error;
     }
-  };
+  }, [connected, publicKey, signMessage, authenticateMutation]);
 
-  const handleDisconnect = async () => {
+  const handleDisconnect = useCallback(async () => {
     await disconnect();
     setAuthToken("");
     resetAuthState();
     queryClient.clear();
     isAuthInProgress.current = false;
-  };
+  }, [disconnect, resetAuthState, queryClient]);
 
   // Countdown timer effect
   useEffect(() => {

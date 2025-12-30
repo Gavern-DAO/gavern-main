@@ -70,7 +70,7 @@ export default function Navbar() {
         startAuthentication,
         publicKey
     } = useWalletAuth();
-    const { setVisible } = useWalletModal();
+    const { visible, setVisible } = useWalletModal();
     const { connected, disconnect, wallet } = useWallet();
     const [copied, setCopied] = React.useState(false);
 
@@ -94,8 +94,8 @@ export default function Navbar() {
         } catch (err) {
             console.error("Authentication failed:", err);
             dispatch({ type: "SET_ERROR", payload: err instanceof Error ? err : new Error("Auth failed") });
-            // Disconnect on error
-            disconnect();
+            // Do NOT disconnect here automatically - let the user stay connected
+            // and choose to either retry auth or disconnect manually.
         } finally {
             isSigningInRef.current = false;
         }
@@ -138,20 +138,20 @@ export default function Navbar() {
                 if (isAuthenticated || hasValidSession) {
                     dispatch({ type: "SIGN_IN_SUCCESS" });
                 }
-                // New sign in: connected, no error, and NOT currently/recently signing out
-                else if (connected && !error && !wasSigningOutRef.current) {
+                // New sign in: connected, no error, modal closed, and NOT recently signing out
+                else if (connected && !error && !wasSigningOutRef.current && !visible) {
                     doSignIn();
                 }
                 break;
 
             case "signed-in":
-                // Lost connection or auth
-                if (!connected || !isAuthenticated) {
+                // If we lose both connection and global auth, go back to signed-out
+                if (!connected && !isAuthenticated) {
                     dispatch({ type: "SIGN_OUT_SUCCESS" });
                 }
                 break;
         }
-    }, [status, connected, isAuthenticated, error, doSignIn]);
+    }, [status, connected, isAuthenticated, error, doSignIn, visible]);
 
     // Logout - using an async flow to prevent the race condition
     const logout = useCallback(async () => {
