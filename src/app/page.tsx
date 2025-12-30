@@ -19,6 +19,7 @@ import SuccessfulWalletModal from "@/components/app/successful-wallet-modal";
 import DaosFoundModal from "@/components/app/daos-found-modal";
 import axios from "axios";
 import SkeletonTable from "@/components/app/skeleton-table";
+import { formatNumber } from "@/lib/utils";
 
 
 const Navbar = dynamic(() => import("@/components/app/navbar"), { ssr: false });
@@ -212,7 +213,7 @@ export default function Page() {
         daoName: dao.realmName,
         daoHealth: (dao.status === "active" ? "Alive" : "Dead") as "Alive" | "Dead",
         proposals: dao.proposalCount,
-        treasuryBalance: `$${Number(dao.treasuryBalance).toLocaleString()}`,
+        treasuryBalance: `$${formatNumber(dao.treasuryBalance, 1)}`,
         isActive: dao.activeProposal.exists,
         timeLeft: dao.activeProposal.exists
           ? dao.activeProposal.latest
@@ -241,7 +242,7 @@ export default function Page() {
           daoHealth: (dao.summary?.status === "active" ? "Alive" : "Dead") as "Alive" | "Dead",
           proposals: dao.summary?.proposalCount || 0,
           treasuryBalance: dao.summary
-            ? `$${Number(dao.summary.treasuryBalance).toLocaleString()}`
+            ? `$${formatNumber(dao.summary.treasuryBalance, 1)}`
             : "$0",
           image: mainnetDao?.ogImage ?? "/dao-1.png",
           governancePower: dao.governancePower || "0",
