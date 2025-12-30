@@ -187,7 +187,7 @@ export default function WatchlistTable({
                 onClick={onTrackMoreClick}
                 className="flex items-center justify-center gap-2 cursor-pointer select-none hover:opacity-80 transition-opacity"
               >
-                Tracked More DAOs →
+                Track More DAOs →
               </span>
             </div>
           )}
@@ -204,12 +204,12 @@ export default function WatchlistTable({
             ))
           )}
           {data.length !== 0 && (
-            <div className="flex items-center justify-center p-8 text-[#101828B2] leading-[24px] text-[1.25rem]">
+            <div className="flex items-center justify-center p-8 text-[#101828B2] leading-[24px] text-[1rem]">
               <span
                 onClick={onTrackMoreClick}
                 className="flex items-center justify-center gap-2 cursor-pointer select-none hover:opacity-80 transition-opacity"
               >
-                Tracked More DAOs →
+                Track More DAOs →
               </span>
             </div>
           )}

@@ -24,12 +24,10 @@ export default function SuccessfulWalletModal() {
       onOpenChange={setSuccessfulWalletModalOpen}
     >
       <DialogContent
-        className="w-full sm:max-w-5xl sm:min-w-[1000px] sm:min-h-[517px] self-start space-x-0 space-y-0 pb-4 rounded-[32px] flex flex-col font-sans"
+        className="w-full sm:max-w-5xl sm:min-w-[1000px] self-start p-0 pb-10 rounded-[32px] flex flex-col font-sans"
         showCloseButton={false}
-      // ✅ Remove z-10, let Dialog handle z-index (usually z-50 by default)
-      // ✅ Add forceMount to ensure it renders immediately
       >
-        <DialogHeader className="flex flex-col gap-3 pt-12 pl-12 md:pl-20 pr-10 text-left sm:text-left">
+        <DialogHeader className="flex flex-col gap-3 pt-12 pl-16 md:pl-24 pr-10 text-left sm:text-left">
           <DialogTitle className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold text-3xl md:text-4xl">
             Wallet Successfully connected.
           </DialogTitle>
@@ -38,6 +36,10 @@ export default function SuccessfulWalletModal() {
             power in those DAOs too.
           </DialogDescription>
         </DialogHeader>
+
+        {/* End-to-end thin line 30px after description */}
+        <div className="w-full border-t border-[#E7E7E7] dark:border-[#1A1A1A] mt-[30px]" />
+
         <section className="flex-1 flex flex-col items-center justify-center py-6 text-[#10182880] dark:text-[#A1A1A1] font-normal text-[16px]">
           <span>Please wait, It happens in seconds!</span>
           <span className="block bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent py-0 text-[128px] cursor-default font-medium">

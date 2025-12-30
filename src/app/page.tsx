@@ -12,7 +12,7 @@ import ActiveDaosTable from "@/components/app/active-daos-table";
 import ClosedDaosTable from "@/components/app/closed-daos-table";
 import TrackDaosTable from "@/components/app/track-daos-table";
 import dynamic from "next/dynamic";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { daosApi, userApi } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
 import SuccessfulWalletModal from "@/components/app/successful-wallet-modal";
@@ -93,6 +93,7 @@ export default function Page() {
     queryKey: ["trackedDaosWithSummary"],
     queryFn: userApi.getTrackedDaosWithSummary,
     enabled: isAuthenticated,
+    placeholderData: keepPreviousData,
   });
 
   // Log trackedDaosWithSummary changes
@@ -170,6 +171,7 @@ export default function Page() {
       return sortedSummaryData;
     },
     enabled: !!allDaos,
+    placeholderData: keepPreviousData,
   });
 
 
@@ -200,7 +202,7 @@ export default function Page() {
   const isLoadingClosedProposalsTab = isLoadingAllDaosTab;
   const isLoadingTrackDaosTab = isLoadingAllDaosTab;
 
-  const allDaosData = Array.isArray(summarizedDaos)
+  const allDaosData = useMemo(() => Array.isArray(summarizedDaos)
     ? summarizedDaos.map((dao) => {
       const mainnetDao = mainnetBeta?.find(
         (mDao: MainnetDao) => mDao.realmId === dao.realm
@@ -218,7 +220,8 @@ export default function Page() {
         image: mainnetDao?.ogImage ?? "/dao-1.png",
       };
     })
-    : [];
+    : [], [summarizedDaos, mainnetBeta]);
+
 
   // Map trackedDaosWithSummary to watchlist data format
   const watchlistData = useMemo(

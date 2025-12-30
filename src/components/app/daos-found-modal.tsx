@@ -16,12 +16,22 @@ import { UserDaosResponse } from "@/lib/api";
 import { formatNumber } from "@/lib/utils";
 import { XIcon } from "lucide-react";
 
+interface DaoItem {
+  imageUrl?: string;
+  realmName?: string;
+  tokenMetadata?: {
+    symbol?: string;
+  } | null;
+  governingTokenDepositAmount?: string;
+  [key: string]: unknown;
+}
+
 export default function DaosFoundModal() {
   const { daosFoundModalOpen, setDaosFoundModalOpen } = useWalletAuth();
   const queryClient = useQueryClient();
 
-  // Get cached data from the mutation
-  const cachedData = queryClient.getQueryData<UserDaosResponse>(["daos"]);
+  // Get cached data from the unified query
+  const cachedData = queryClient.getQueryData<UserDaosResponse>(["userDaos"]);
 
   const handleGoToDashboard = () => {
     setDaosFoundModalOpen(false);
@@ -41,7 +51,7 @@ export default function DaosFoundModal() {
   return (
     <Dialog open={daosFoundModalOpen} onOpenChange={setDaosFoundModalOpen}>
       <DialogContent
-        className="w-full sm:max-w-5xl sm:min-w-[1000px] sm:min-h-[517px] self-start space-x-0 space-y-0 pb-8 rounded-[32px] flex flex-col font-sans bg-white dark:bg-[#0A0A0A] border-none [&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-thumb]:bg-[#010101]"
+        className="w-full sm:max-w-5xl sm:min-w-[1000px] self-start p-0 pb-10 rounded-[32px] flex flex-col font-sans bg-white dark:bg-[#0A0A0A] border-none [&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-thumb]:bg-[#010101]"
         showCloseButton={false}
       >
         <div className="relative flex flex-col w-full h-full">
@@ -49,8 +59,7 @@ export default function DaosFoundModal() {
           <DialogClose className="absolute top-12 right-12 md:right-20 z-50 text-[#10182880] dark:text-[#A1A1A1] hover:text-[#101828] dark:hover:text-white transition-colors">
             <XIcon size={24} />
           </DialogClose>
-
-          <DialogHeader className="flex flex-col gap-3 pt-12 pl-12 md:pl-20 pr-24 md:pr-32 text-left sm:text-left">
+          <DialogHeader className="flex flex-col gap-3 pt-12 pl-16 md:pl-24 pr-24 md:pr-32 text-left sm:text-left">
             <DialogTitle className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold text-[32px] leading-tight">
               {hasDaos
                 ? `We Found ${count} DAO${count > 1 ? "s" : ""} associated with your wallet.`
@@ -59,7 +68,7 @@ export default function DaosFoundModal() {
             <DialogDescription className="font-normal text-[#10182880] dark:text-[#A1A1A1] text-[20px] leading-relaxed">
               {hasDaos ? (
                 <>
-                  This DAO{count > 1 ? "s" : ""} will be automatically added to your{" "}
+                  {count > 1 ? "These" : "This"} DAO{count > 1 ? "s" : ""} will be automatically added to your{" "}
                   <span className="text-[#101828] dark:text-white font-medium">watchlist</span> in the gavern
                   dashboard.
                 </>
@@ -69,8 +78,11 @@ export default function DaosFoundModal() {
             </DialogDescription>
           </DialogHeader>
 
-          <section className="flex-1 flex flex-col items-center px-12 md:px-20 py-8 w-full gap-1 overflow-y-auto max-h-[400px]">
-            {hasDaos && finalDaosData.result.map((dao: any, index: number) => {
+          {/* End-to-end thin line 20px after description */}
+          <div className="w-full border-t border-[#E7E7E7] dark:border-[#1A1A1A] mt-5" />
+
+          <section className="flex-1 flex flex-col items-center px-16 md:px-24 py-2 w-full gap-1 overflow-y-auto max-h-[500px]">
+            {hasDaos && finalDaosData.result.map((dao: DaoItem, index: number) => {
               // Priority: Symbol from metadata (if valid) > Realm Name (if valid)
               const symbol = dao.tokenMetadata?.symbol;
               const isValidSymbol = symbol && symbol !== "?" && symbol.trim() !== "";
@@ -83,11 +95,11 @@ export default function DaosFoundModal() {
               return (
                 <div
                   key={index}
-                  className="flex justify-between items-center w-full py-6 border-b border-[#F0F0F0] dark:border-[#1A1A1A] last:border-0"
+                  className="flex justify-between items-center w-full pt-6 pb-2 border-b border-[#E7E7E7] dark:border-[#1A1A1A] last:border-0"
                 >
-                  <div className="flex items-center gap-[20px]">
+                  <div className="flex items-center gap-[20px] pb-2">
                     <div className="relative w-[48px] h-[48px] flex-shrink-0 bg-[#F9F9F9] dark:bg-[#1A1A1A] rounded-full overflow-hidden">
-                      <DaoImage src={dao.imageUrl} alt={dao.realmName} />
+                      <DaoImage src={dao.imageUrl || ""} alt={dao.realmName || ""} />
                     </div>
                     <h2 className="text-[20px] font-semibold text-[#101828] dark:text-white">
                       {dao.realmName}
@@ -95,7 +107,7 @@ export default function DaosFoundModal() {
                   </div>
 
                   <span
-                    className="text-[14px] font-medium"
+                    className="text-[14px] font-medium pb-2"
                     style={{
                       background: 'linear-gradient(270deg, #22E9AD 0%, #9846FE 100%)',
                       WebkitBackgroundClip: 'text',
@@ -103,7 +115,7 @@ export default function DaosFoundModal() {
                       backgroundClip: 'text',
                     }}
                   >
-                    {formatNumber(dao.governingTokenDepositAmount, 2)} {tokenIdentifier} Detected!
+                    {formatNumber(dao.governingTokenDepositAmount || "0", 2)} {tokenIdentifier} Detected!
                   </span>
                 </div>
               );
@@ -116,9 +128,9 @@ export default function DaosFoundModal() {
             )}
           </section>
 
-          <div className="flex justify-center pt-4">
+          <div className="flex justify-center pt-2">
             <Button
-              className="w-auto py-6 px-10 rounded-[12px] bg-[#010101] dark:bg-white text-white dark:text-[#010101] hover:opacity-90 transition-all font-medium text-lg"
+              className="w-auto py-[29px] px-10 rounded-[5px] bg-[#010101] dark:bg-white text-white dark:text-[#010101] hover:opacity-90 transition-all font-medium text-lg"
               onClick={handleGoToDashboard}
             >
               Go to Dashboard

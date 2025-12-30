@@ -3,10 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { useCallback, useEffect, useReducer, useRef } from "react";
-import { Input } from "../ui/input";
 import { MdOutlineLightMode, MdOutlineDarkMode } from "react-icons/md";
 import { Button } from "../ui/button";
-import { CiSearch } from "react-icons/ci";
 import { Copy, LogOut, EllipsisVertical, User } from "lucide-react";
 import {
     DropdownMenu,
@@ -14,7 +12,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Label } from "../ui/label";
+
 import { useTheme } from "next-themes";
 import { useWalletAuth } from "@/hooks/use-wallet-auth";
 import { useWallet } from "@solana/wallet-adapter-react";
