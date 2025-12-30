@@ -171,17 +171,20 @@ export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
 
                                     {/* Discord */}
                                     {statsData?.discord ? (
-                                        <Link
-                                            href="#"
-                                            className="text-gray-400 hover:text-[#5865F2] transition-colors"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                navigator.clipboard.writeText(statsData.discord!);
-                                                alert("Discord username copied to clipboard!");
-                                            }}
-                                        >
-                                            <HugeiconsIcon icon={DiscordIcon} />
-                                        </Link>
+                                        <div className="relative group flex items-center justify-center">
+                                            <div
+                                                className="text-gray-400 hover:text-[#5865F2] transition-colors cursor-pointer"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(statsData.discord!);
+                                                }}
+                                            >
+                                                <HugeiconsIcon icon={DiscordIcon} />
+                                            </div>
+                                            <div className="absolute bottom-full mb-2 hidden group-hover:block whitespace-nowrap bg-black dark:bg-white text-white dark:text-black text-xs px-2 py-1 rounded shadow-lg z-50">
+                                                {statsData.discord}
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black dark:border-t-white"></div>
+                                            </div>
+                                        </div>
                                     ) : (
                                         <div className="text-gray-300 dark:text-gray-700 cursor-not-allowed">
                                             <HugeiconsIcon icon={DiscordIcon} />
