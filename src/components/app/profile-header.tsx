@@ -16,7 +16,7 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
-    const { data: statsData, isLoading } = useDelegateStats(pubkey!);
+    const { data: statsData, isLoading, isFetching } = useDelegateStats(pubkey!);
     const { snsId, isLoading: isSnsLoading } = useSnsId(pubkey);
     const { publicKey } = useWalletAuth();
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -94,13 +94,18 @@ export function ProfileHeader({ pubkey }: ProfileHeaderProps) {
 
                     {/* Profile Picture - Overlapping */}
                     <div className="-mt-16 md:-mt-20 shrink-0 z-10 w-fit -ml-4 relative group">
-                        <div className="w-32 h-32 md:w-36 md:h-36 rounded-full border-4 border-white dark:border-[#010101] overflow-hidden bg-white dark:bg-black shadow-sm ring-1 ring-gray-100/50 dark:ring-white/10">
+                        {/* Animated Loading Border */}
+                        {isFetching && (
+                            <div className="absolute -inset-[3px] rounded-full loading-gradient-border animate-spin-slow" />
+                        )}
+
+                        <div className="relative w-32 h-32 md:w-36 md:h-36 rounded-full border-4 border-white dark:border-[#010101] overflow-hidden bg-white dark:bg-black shadow-sm ring-1 ring-gray-100/50 dark:ring-white/10 z-10">
                             <Image
                                 src={statsData?.profilePictureUrl || "/icoder.png"}
                                 alt={displayName}
                                 width={144}
                                 height={144}
-                                className="w-full h-full object-cover"
+                                className={`w-full h-full object-cover ${isFetching ? "opacity-50 blur-[1px]" : ""} transition-all duration-300`}
                             />
                         </div>
                         {/* Edit Button overlay - only show for owner */}
