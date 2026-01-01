@@ -5,6 +5,7 @@ import {
   type ProposalStatus,
 } from "./proposal-status-badge";
 import { mapProposalStatus, truncateAddress, cn } from "@/lib/utils";
+import { FormattedContent } from "./formatted-content";
 
 interface ProposalItemProps {
   status: ProposalStatus;
@@ -26,55 +27,6 @@ export function ProposalItem({
   participationRate,
 }: ProposalItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  // Function to detect and linkify URLs in text
-  const linkify = (text: string) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const parts = text.split(urlRegex);
-    return parts.map((part, i) => {
-      if (part.match(urlRegex)) {
-        return (
-          <a
-            key={i}
-            href={part}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#3B82F6] hover:underline break-all"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {part}
-          </a>
-        );
-      }
-      return part;
-    });
-  };
-
-  // Simple function to format description: handle bullet points and links
-  const formatDescription = (text: string) => {
-    if (!text) return null;
-
-    // Split by lines and check for bullet points or simple list markers
-    const lines = text.split('\n');
-    return lines.map((line, idx) => {
-      const trimmedLine = line.trim();
-      if (trimmedLine.startsWith('*') || trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
-        return (
-          <li key={idx} className="ml-4 list-disc text-[#6B7280] dark:text-[#909090] text-xs md:text-sm leading-relaxed">
-            {linkify(trimmedLine.replace(/^[*•-]\s*/, ''))}
-          </li>
-        );
-      }
-      return (
-        <p key={idx} className={cn(
-          "text-[#6B7280] dark:text-[#909090] text-xs md:text-sm leading-relaxed",
-          idx === 0 && "font-bold text-[#101828] dark:text-[#EDEDED] mb-2"
-        )}>
-          {linkify(trimmedLine)}
-        </p>
-      );
-    });
-  };
 
   return (
     <div
@@ -116,7 +68,10 @@ export function ProposalItem({
           <div className="p-3 md:p-4 flex flex-col gap-4 text-[#6B7280] dark:text-[#909090]">
             <div className="flex flex-col gap-1">
               {description && description.trim() !== "" ? (
-                formatDescription(description)
+                <FormattedContent
+                  content={description}
+                  className="text-[#6B7280] dark:text-[#909090] text-xs md:text-sm leading-relaxed"
+                />
               ) : (
                 <p className="text-xs md:text-sm italic opacity-70">
                   no description for this proposal
