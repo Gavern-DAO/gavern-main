@@ -146,7 +146,15 @@ const EmptyState = () => {
   );
 };
 
-export default function ActiveDaosTable({ data }: { data: IActiveDao[] }) {
+export default function ActiveDaosTable({
+  data,
+  onLoadMore,
+  isLoadingMore,
+}: {
+  data: IActiveDao[];
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
+}) {
   const router = useRouter();
 
   const handleRowClick = (row: IActiveDao) => {
@@ -164,8 +172,12 @@ export default function ActiveDaosTable({ data }: { data: IActiveDao[] }) {
         />
         {data.length !== 0 && (
           <div className="flex items-center justify-center p-8  text-[#101828B2] dark:text-[#A1A1A1] leading-[24px] text-[1.25rem]">
-            <span className="flex items-center justify-center gap-2 cursor-pointer select-none">
-              Load More <ArrowDown />
+            <span
+              className="flex items-center justify-center gap-2 cursor-pointer select-none hover:text-[#101828] dark:hover:text-white transition-colors"
+              onClick={onLoadMore}
+            >
+              {isLoadingMore ? "Loading..." : "Load More"}
+              {!isLoadingMore && <ArrowDown />}
             </span>
           </div>
         )}
@@ -182,8 +194,12 @@ export default function ActiveDaosTable({ data }: { data: IActiveDao[] }) {
         )}
         {data.length > 0 && (
           <div className="flex justify-center pt-6">
-            <span className="flex items-center gap-2 text-[#101828B2] dark:text-[#A1A1A1] text-lg cursor-pointer select-none">
-              Load More <ArrowDown />
+            <span
+              className="flex items-center gap-2 text-[#101828B2] dark:text-[#A1A1A1] text-lg cursor-pointer select-none hover:text-[#101828] dark:hover:text-white transition-colors"
+              onClick={onLoadMore}
+            >
+              {isLoadingMore ? "Loading..." : "Load More"}
+              {!isLoadingMore && <ArrowDown />}
             </span>
           </div>
         )}
