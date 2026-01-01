@@ -74,6 +74,9 @@ export interface Proposal {
   status: string;
   datePublished: string;
   creator: string;
+  description: string;
+  numberOfVotes: number;
+  participationRate: number;
 }
 
 export type ProposalSummary = Proposal[];

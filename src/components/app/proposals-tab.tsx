@@ -77,6 +77,12 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
   // Inactive circle size (red)
   const inactiveSize = Math.max(minSize, (inactiveVoters / totalVoters) * baseSize);
 
+  const [displayLimit, setDisplayLimit] = React.useState(10);
+
+  const handleLoadMore = () => {
+    setDisplayLimit((prev) => prev + 10);
+  };
+
   return (
     <div className="w-full bg-transparent space-y-4">
       <div className="bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] p-3 md:p-4 rounded-[8px] gap-4 md:gap-6 grid grid-cols-1 md:grid-cols-2">
@@ -282,7 +288,8 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
             <ProposalsList
               proposals={proposals}
               totalCount={proposals?.length || 0}
-              onLoadMore={() => console.log("Load more clicked")}
+              displayLimit={displayLimit}
+              onLoadMore={handleLoadMore}
             />
           )}
         </div>
