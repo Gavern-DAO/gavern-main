@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Role } from "./dao-structure-n-roles";
 import { FaXTwitter } from "react-icons/fa6";
 import { RiDiscordLine } from "react-icons/ri";
+import { FormattedContent } from "./formatted-content";
 
 interface RoleCardProps {
   role: Role;
@@ -25,9 +26,10 @@ export default function RoleCard({ role }: RoleCardProps) {
         </div>
 
         {/* Description */}
-        <p className="text-xs md:text-sm leading-[16px] md:leading-[18px] text-[#101828] dark:text-[#EDEDED]">
-          {description}
-        </p>
+        <FormattedContent
+          content={description}
+          className="text-xs md:text-sm leading-[16px] md:leading-[18px] text-[#101828] dark:text-[#EDEDED]"
+        />
       </div>
 
       {/* Footer - either holder info or vacant button */}
