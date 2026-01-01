@@ -1,5 +1,6 @@
 "use client";
 import AllDaosTable from "@/components/app/all-daos-table";
+import Footer from "@/components/app/footer";
 import Tab from "@/components/app/tab";
 import CheckIcon from "@/components/icons/check-icon";
 import EyeIcon from "@/components/icons/eye-icon";
@@ -60,6 +61,7 @@ export default function Page() {
     },
   ];
   const [activeTab, setActiveTab] = useState(tabs[0]);
+  const [displayLimit, setDisplayLimit] = useState(15);
   const [mounted, setMounted] = useState(false);
   const { isAuthenticated } = useAuthStore();
 
@@ -103,8 +105,8 @@ export default function Page() {
     console.log("[Page] trackedDaosWithSummary isLoading:", isLoadingTrackedDaosWithSummary);
   }, [trackedDaosWithSummary, isLoadingTrackedDaosWithSummary]);
 
-  const { data: summarizedDaos, isLoading: isLoadingSummarizedDaos } = useQuery({
-    queryKey: ["summarizedDaos", allDaos, userDaos, trackedDaosWithSummary],
+  const { data: summarizedDaos, isLoading: isLoadingSummarizedDaos, isFetching: isFetchingSummarizedDaos } = useQuery({
+    queryKey: ["summarizedDaos", allDaos, userDaos, trackedDaosWithSummary, displayLimit],
     queryFn: async () => {
       if (!allDaos) {
         return [];
@@ -138,8 +140,8 @@ export default function Page() {
 
       const fillPubkeys = [...memberDaos, ...otherDaos].map(d => d.pubkey);
 
-      // Combine to form final list, capped at 15
-      const finalPubkeysToSummarize = [...topTierPubkeys, ...fillPubkeys].slice(0, 15);
+      // Combine to form final list, capped at displayLimit
+      const finalPubkeysToSummarize = [...topTierPubkeys, ...fillPubkeys].slice(0, displayLimit);
 
       if (finalPubkeysToSummarize.length === 0) {
         return [];
@@ -285,6 +287,12 @@ export default function Page() {
     });
   }, [allDaosData, trackedDaosWithSummary]);
 
+  const handleLoadMore = () => {
+    setDisplayLimit((prev) => prev + 15);
+  };
+
+  const isLoadMoreLoading = isFetchingSummarizedDaos && !isLoadingSummarizedDaos;
+
   return (
     <div className="space-y-0 md:space-y-4">
       {/* <HookStateDebugger /> */}
@@ -293,7 +301,15 @@ export default function Page() {
       <Tab tabs={tabs} onTabChange={(tab) => setActiveTab(tab)} activeTab={activeTab} />
 
       {activeTab.item === tabs[0].item &&
-        (isLoadingAllDaosTab ? <SkeletonTable /> : <AllDaosTable data={allDaosData} />)}
+        (isLoadingAllDaosTab ? (
+          <SkeletonTable />
+        ) : (
+          <AllDaosTable
+            data={allDaosData}
+            onLoadMore={handleLoadMore}
+            isLoadingMore={isLoadMoreLoading}
+          />
+        ))}
       {activeTab.item === tabs[1].item &&
         (isLoadingWatchlistTab ? (
           <SkeletonTable />
@@ -307,13 +323,21 @@ export default function Page() {
         (isLoadingActiveProposalsTab ? (
           <SkeletonTable />
         ) : (
-          <ActiveDaosTable data={activeDaos} />
+          <ActiveDaosTable
+            data={activeDaos}
+            onLoadMore={handleLoadMore}
+            isLoadingMore={isLoadMoreLoading}
+          />
         ))}
       {activeTab.item === tabs[3].item &&
         (isLoadingClosedProposalsTab ? (
           <SkeletonTable />
         ) : (
-          <ClosedDaosTable data={closedDaos} />
+          <ClosedDaosTable
+            data={closedDaos}
+            onLoadMore={handleLoadMore}
+            isLoadingMore={isLoadMoreLoading}
+          />
         ))}
       {activeTab.item === tabs[4].item &&
         (isLoadingTrackDaosTab ? (
@@ -321,7 +345,7 @@ export default function Page() {
         ) : (
           <TrackDaosTable data={trackDaosData} />
         ))}
-      {/* <Footer /> */}
+      <Footer />
 
       {/* <DebugSuccessfulWalletModal /> */}
       <SuccessfulWalletModal />
