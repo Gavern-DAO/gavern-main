@@ -33,9 +33,6 @@ export interface ProofOfWork {
   daoPubkey: string;
   skillsRequired: string[];
   workLink: string;
-  discord?: string;
-  telegram?: string;
-  x?: string;
 }
 
 export interface CreateProofOfWorkRequest {
@@ -44,9 +41,6 @@ export interface CreateProofOfWorkRequest {
   daoPubkey: string;
   skillsRequired: string[];
   workLink: string;
-  discord?: string;
-  telegram?: string;
-  x?: string;
 }
 
 export interface UpdateProofOfWorkRequest {
@@ -55,9 +49,6 @@ export interface UpdateProofOfWorkRequest {
   daoPubkey?: string;
   skillsRequired?: string[];
   workLink?: string;
-  discord?: string;
-  telegram?: string;
-  x?: string;
 }
 
 export interface DelegateStatsResponse {

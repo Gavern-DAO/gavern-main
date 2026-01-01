@@ -18,8 +18,7 @@ import {
     SelectValue,
 } from "../ui/select";
 import { Input } from "../ui/input";
-import { FaDiscord, FaTelegramPlane, FaChevronDown, FaCheck, FaTimes } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
+import { FaChevronDown, FaCheck, FaTimes } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 import { PublicKey } from "@solana/web3.js";
 
@@ -69,9 +68,6 @@ export default function ProofOfWorkModal({ open, onOpenChange, initialData }: Pr
         selectedDaoPubkey: "",
         skillsRequired: [] as string[],
         workLink: "",
-        discord: "",
-        telegram: "",
-        x: "",
     });
 
     // Initialize form with initialData when open changes
@@ -83,9 +79,6 @@ export default function ProofOfWorkModal({ open, onOpenChange, initialData }: Pr
                     selectedDaoPubkey: initialData.daoPubkey,
                     skillsRequired: initialData.skillsRequired,
                     workLink: initialData.workLink,
-                    discord: initialData.discord || "",
-                    telegram: initialData.telegram || "",
-                    x: initialData.x || "",
                 });
                 // If the DAO is not in the list, we might want to set custom DAO
                 // But for now let's assume if we have a pubkey it might be in the list or we treat it as custom if not found?
@@ -101,9 +94,6 @@ export default function ProofOfWorkModal({ open, onOpenChange, initialData }: Pr
                     selectedDaoPubkey: "",
                     skillsRequired: [],
                     workLink: "",
-                    discord: "",
-                    telegram: "",
-                    x: "",
                 });
                 setIsCustomDao(false);
                 setCustomDao({ name: "", pubkey: "" });
@@ -160,10 +150,7 @@ export default function ProofOfWorkModal({ open, onOpenChange, initialData }: Pr
             return;
         }
 
-        if (!formData.x && !formData.discord && !formData.telegram) {
-            setSubmitError("Please provide at least one social media link");
-            return;
-        }
+
 
         let daoName: string;
         let daoPubkey: string;
@@ -203,9 +190,6 @@ export default function ProofOfWorkModal({ open, onOpenChange, initialData }: Pr
             daoPubkey: daoPubkey,
             skillsRequired: formData.skillsRequired,
             workLink: formData.workLink,
-            discord: formData.discord,
-            telegram: formData.telegram,
-            x: formData.x,
         };
 
         const onSuccess = () => {
@@ -215,9 +199,6 @@ export default function ProofOfWorkModal({ open, onOpenChange, initialData }: Pr
                 selectedDaoPubkey: "",
                 skillsRequired: [],
                 workLink: "",
-                discord: "",
-                telegram: "",
-                x: "",
             });
             setSearchQuery("");
             setSkillInputValue("");
@@ -526,56 +507,7 @@ export default function ProofOfWorkModal({ open, onOpenChange, initialData }: Pr
                         />
                     </div>
 
-                    {/* Socials Section */}
-                    <div className="flex flex-col gap-4">
-                        <h3 className="font-(family-name:--font-geist-sans) font-medium text-[14px] text-[#101828] dark:text-white">
-                            Social media links * <span className="text-[#667085] font-normal text-[12px]">(you need to fill at least one of the any below.)</span>
-                        </h3>
 
-                        <div className="flex flex-col gap-3">
-                            {/* X (Twitter) */}
-                            <div className="flex items-center border border-[#D0D5DD] dark:border-[#333333] rounded-[4px] focus-within:ring-1 focus-within:ring-[#22E9AD] overflow-hidden">
-                                <div className="flex items-center justify-center w-[44px] h-[44px] border-r border-[#D0D5DD] dark:border-[#333333] bg-gray-50 dark:bg-[#2A2A2A]">
-                                    <FaXTwitter className="text-[#667085] text-[16px]" />
-                                </div>
-                                <input
-                                    name="x"
-                                    value={formData.x}
-                                    onChange={handleChange}
-                                    placeholder="x.com/gavernapp"
-                                    className="w-full border-none bg-transparent px-[14px] py-[10px] text-[16px] text-[#101828] dark:text-white placeholder:text-[#667085] dark:placeholder:text-[#888888] focus:outline-none focus:ring-0"
-                                />
-                            </div>
-
-                            {/* Discord */}
-                            <div className="flex items-center border border-[#D0D5DD] dark:border-[#333333] rounded-[4px] focus-within:ring-1 focus-within:ring-[#22E9AD] overflow-hidden">
-                                <div className="flex items-center justify-center w-[44px] h-[44px] border-r border-[#D0D5DD] dark:border-[#333333] bg-gray-50 dark:bg-[#2A2A2A]">
-                                    <FaDiscord className="text-[#667085] text-[18px]" />
-                                </div>
-                                <input
-                                    name="discord"
-                                    value={formData.discord}
-                                    onChange={handleChange}
-                                    placeholder="discord.com/gavernapp"
-                                    className="w-full border-none bg-transparent px-[14px] py-[10px] text-[16px] text-[#101828] dark:text-white placeholder:text-[#667085] dark:placeholder:text-[#888888] focus:outline-none focus:ring-0"
-                                />
-                            </div>
-
-                            {/* Telegram */}
-                            <div className="flex items-center border border-[#D0D5DD] dark:border-[#333333] rounded-[4px] focus-within:ring-1 focus-within:ring-[#22E9AD] overflow-hidden">
-                                <div className="flex items-center justify-center w-[44px] h-[44px] border-r border-[#D0D5DD] dark:border-[#333333] bg-gray-50 dark:bg-[#2A2A2A]">
-                                    <FaTelegramPlane className="text-[#667085] text-[18px]" />
-                                </div>
-                                <input
-                                    name="telegram"
-                                    value={formData.telegram}
-                                    onChange={handleChange}
-                                    placeholder="telegram.com/gavernapp"
-                                    className="w-full border-none bg-transparent px-[14px] py-[10px] text-[16px] text-[#101828] dark:text-white placeholder:text-[#667085] dark:placeholder:text-[#888888] focus:outline-none focus:ring-0"
-                                />
-                            </div>
-                        </div>
-                    </div>
 
 
 
