@@ -289,6 +289,7 @@ export default function ProposalsTab({ realm, realmOwner }: ProposalsTabProps) {
               proposals={proposals}
               totalCount={proposals?.length || 0}
               displayLimit={displayLimit}
+              daoPubkey={realm}
               onLoadMore={handleLoadMore}
             />
           )}
