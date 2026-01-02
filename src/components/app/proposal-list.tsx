@@ -8,6 +8,7 @@ interface ProposalsListProps {
   proposals: Proposal[] | undefined;
   totalCount: number;
   displayLimit: number;
+  daoPubkey: string;
   onLoadMore?: () => void;
 }
 
@@ -15,6 +16,7 @@ export function ProposalsList({
   proposals,
   totalCount,
   displayLimit,
+  daoPubkey,
   onLoadMore,
 }: ProposalsListProps) {
   const hasMore = totalCount > displayLimit;
@@ -32,6 +34,8 @@ export function ProposalsList({
             description={proposal.description}
             numberOfVotes={proposal.numberOfVotes}
             participationRate={proposal.participationRate}
+            proposalPubkey={proposal.pubkey}
+            daoPubkey={daoPubkey}
           />
         ))}
       </div>

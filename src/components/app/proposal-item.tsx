@@ -15,6 +15,8 @@ interface ProposalItemProps {
   description: string;
   numberOfVotes: number;
   participationRate: number;
+  proposalPubkey: string;
+  daoPubkey: string;
 }
 
 export function ProposalItem({
@@ -25,6 +27,8 @@ export function ProposalItem({
   description,
   numberOfVotes,
   participationRate,
+  proposalPubkey,
+  daoPubkey,
 }: ProposalItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -80,16 +84,28 @@ export function ProposalItem({
             </div>
 
             {/* Stats Section */}
-            <div className="flex items-center justify-between gap-2 text-[10px] md:text-xs font-medium">
-              <div className="text-[#6B7280] dark:text-[#909090]">
-                Number of voters: <span className="font-semibold bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent">{numberOfVotes} votes</span> recorded.
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-2 text-[10px] md:text-xs font-medium">
+                <div className="text-[#6B7280] dark:text-[#909090]">
+                  Number of voters: <span className="font-semibold bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent">{numberOfVotes} votes</span> recorded.
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold">
+                    {participationRate}%
+                  </span>
+                  <span className="text-[#6B7280] dark:text-[#909090]">participation</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <span className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold">
-                  {participationRate}%
-                </span>
-                <span className="text-[#6B7280] dark:text-[#909090]">participation</span>
-              </div>
+
+              <a
+                href={`https://v2.realms.today/dao/${daoPubkey}/proposal/${proposalPubkey}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="w-full py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-[4px] font-medium text-xs md:text-sm flex items-center justify-center hover:opacity-90 transition-opacity"
+              >
+                View On Realms
+              </a>
             </div>
           </div>
         </div>
