@@ -1,11 +1,13 @@
 "use client";
 
-import { type ReactElement } from "react";
+import { type ReactElement, useMemo } from "react";
+import React from "react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useQuery } from "@tanstack/react-query";
 import { daosApi, ApiError } from "@/lib/api";
 import RoleCard from "./role-card";
+import { rolesData } from "./roles-data";
 
 export interface Role {
   id: string;
@@ -57,10 +59,11 @@ export default function DaoStructureRoles({
     "statusCode" in error &&
     (error as ApiError).statusCode === 404;
 
-  // Transform API roles to match Role interface
-  const roles: Role[] = storedRoles
-    ? storedRoles.map((role) => {
-        // Format pubkey for display
+  // Transform API roles to match Role interface and merge with default roles
+  const roles: Role[] = React.useMemo(() => {
+    // 1. Convert all stored roles to our Role interface
+    const apiRoles: Role[] = storedRoles
+      ? storedRoles.map((role) => {
         const formatPubkey = (pubkey: string | null): string => {
           if (!pubkey) return "";
           return `${pubkey.slice(0, 5)}...${pubkey.slice(-5)}`;
@@ -68,7 +71,7 @@ export default function DaoStructureRoles({
 
         return {
           id: role.id,
-          title: role.name,
+          title: role.name, // The API returns 'name', we use 'title'
           description: role.description,
           holder: role.pubkey ? formatPubkey(role.pubkey) : undefined,
           isVacant: !role.pubkey,
@@ -77,7 +80,47 @@ export default function DaoStructureRoles({
           x: role.x,
         };
       })
-    : [];
+      : [];
+
+    // 2. Start with default roles, mapped to the Role interface (initially all vacant)
+    const mergedRoles: Role[] = rolesData.map((defaultRole) => ({
+      id: `default-${defaultRole.id}`, // Temporary ID for UI keys
+      title: defaultRole.title,
+      description: defaultRole.description,
+      isVacant: true, // Default to vacant until found in API
+    }));
+
+    // 3. Merge logic
+    // We want to update the 'mergedRoles' with real data if we find a match by title.
+    // If an API role doesn't match a default role title, it's a Custom Role -> add to list.
+
+    const customRoles: Role[] = [];
+
+    apiRoles.forEach((apiRole) => {
+      const existingIndex = mergedRoles.findIndex(
+        (r) => r.title.toLowerCase() === apiRole.title.toLowerCase()
+      );
+
+      if (existingIndex !== -1) {
+        // Found a match! Update the default role with the real API data (ID, holder, etc.)
+        mergedRoles[existingIndex] = apiRole;
+      } else {
+        // No match found in default list -> It's a custom role
+        customRoles.push(apiRole);
+      }
+    });
+
+    // Return combined list sorted: Assigned (isVacant=false) first, then Vacant (isVacant=true)
+    const allRoles = [...mergedRoles, ...customRoles];
+    return allRoles.sort((a, b) => {
+      // If a is assigned (not vacant) and b is vacant, a comes first (-1)
+      if (!a.isVacant && b.isVacant) return -1;
+      // If a is vacant and b is assigned, b comes first (1)
+      if (a.isVacant && !b.isVacant) return 1;
+      // Otherwise maintain original order
+      return 0;
+    });
+  }, [storedRoles]);
 
   const hasRoles = roles.length > 0;
 
