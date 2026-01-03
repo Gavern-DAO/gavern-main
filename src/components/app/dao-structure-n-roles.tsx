@@ -122,7 +122,7 @@ export default function DaoStructureRoles({
     });
   }, [storedRoles]);
 
-  const hasRoles = roles.length > 0;
+  const hasRoles = !!storedRoles && storedRoles.length > 0;
 
   return (
     <div className="bg-white dark:bg-[#010101] dark:border dark:border-[#282828B2] rounded-[5px] flex flex-col gap-2 pb-4 md:pb-6">

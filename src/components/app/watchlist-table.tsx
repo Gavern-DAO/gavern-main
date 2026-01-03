@@ -39,7 +39,7 @@ const DaoImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
   );
 };
 
-export const EmptyState = () => {
+export const EmptyState = ({ onTrackClick }: { onTrackClick?: () => void }) => {
   return (
     <div className="bg-white dark:bg-[#171717] space-y-8 min-h-[578px] md:min-h-[810px] flex flex-col items-center justify-center w-full rounded-none">
       <Image
@@ -50,7 +50,7 @@ export const EmptyState = () => {
       />
       <div className="flex flex-col items-center justify-center gap-3">
         <span>You don’t have any DAOs on your Watchlist currently. </span>
-        <Button className="dark:bg-[]">Add DAOs to watchlist</Button>
+        <Button className="dark:bg-[]" onClick={onTrackClick}>Add DAOs to watchlist</Button>
       </div>
     </div>
   );
@@ -178,7 +178,7 @@ export default function WatchlistTable({
           <DataTable<WatchlistDao>
             columns={columns}
             data={data}
-            emptyState={<EmptyState />}
+            emptyState={<EmptyState onTrackClick={onTrackMoreClick} />}
             onRowClick={handleRowClick}
           />
           {data.length !== 0 && (
@@ -197,7 +197,7 @@ export default function WatchlistTable({
 
         <div className="md:hidden space-y-4 px-4 pb-8">
           {data.length === 0 ? (
-            <EmptyState />
+            <EmptyState onTrackClick={onTrackMoreClick} />
           ) : (
             data.map((dao) => (
               <DaoCard key={dao.id} dao={dao} onClick={() => handleRowClick(dao)} />

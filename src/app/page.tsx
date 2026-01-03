@@ -96,7 +96,6 @@ export default function Page() {
     queryKey: ["trackedDaosWithSummary"],
     queryFn: userApi.getTrackedDaosWithSummary,
     enabled: isAuthenticated,
-    placeholderData: keepPreviousData,
   });
 
   // Log trackedDaosWithSummary changes
@@ -229,7 +228,7 @@ export default function Page() {
   // Map trackedDaosWithSummary to watchlist data format
   const watchlistData = useMemo(
     () => {
-      if (!trackedDaosWithSummary?.result) {
+      if (!isAuthenticated || !trackedDaosWithSummary?.result) {
         return [];
       }
 
@@ -251,7 +250,7 @@ export default function Page() {
         };
       });
     },
-    [trackedDaosWithSummary, mainnetBeta]
+    [trackedDaosWithSummary, mainnetBeta, isAuthenticated]
   );
 
   // Log watchlistData changes
