@@ -11,6 +11,8 @@ import { useAuthStore } from "@/store/auth";
 import { throttle } from "lodash";
 import DaoCard from "./dao-card";
 
+import ConnectWalletModal from "./connect-wallet-modal";
+
 export interface IAllDao {
   id: string;
   daoName: string;
@@ -29,6 +31,7 @@ interface TrackedDao {
 export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
   const { isAuthenticated } = useAuthStore();
   const queryClient = useQueryClient();
+  const [showConnectModal, setShowConnectModal] = useState(false);
 
   const { data: trackedDaos, isLoading: isLoadingTrackedDaos } = useQuery({
     queryKey: ["trackedDaos"],
@@ -76,6 +79,11 @@ export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
   );
 
   const handleCheckboxChange = (checked: boolean, daoId: string) => {
+    if (!isAuthenticated) {
+      setShowConnectModal(true);
+      return;
+    }
+
     setSelectedDaos((prev) =>
       checked ? [...prev, daoId] : prev.filter((id) => id !== daoId)
     );
@@ -176,13 +184,18 @@ export default function TrackDaosTable({ data }: { data: IAllDao[] }) {
               key={dao.id}
               dao={dao}
               onClick={() => { }}
-              showSelect={isAuthenticated}
+              showSelect={true} // Always show select on track page, auth handled on click
               isSelected={selectedDaos.includes(dao.id)}
               onSelectChange={handleCheckboxChange}
             />
           ))
         )}
       </div>
+
+      <ConnectWalletModal
+        isOpen={showConnectModal}
+        onOpenChange={setShowConnectModal}
+      />
     </div>
   );
 }
