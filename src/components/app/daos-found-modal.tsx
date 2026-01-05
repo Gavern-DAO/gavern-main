@@ -51,21 +51,21 @@ export default function DaosFoundModal() {
   return (
     <Dialog open={daosFoundModalOpen} onOpenChange={setDaosFoundModalOpen}>
       <DialogContent
-        className="w-full sm:max-w-5xl sm:min-w-[1000px] self-start p-0 pb-10 rounded-[32px] flex flex-col font-sans bg-white dark:bg-[#0A0A0A] border-none [&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-thumb]:bg-[#010101]"
+        className="w-full sm:max-w-5xl sm:min-w-[1000px] self-start p-0 pb-6 md:pb-10 rounded-[32px] flex flex-col font-sans bg-white dark:bg-[#0A0A0A] border-none [&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-thumb]:bg-[#010101]"
         showCloseButton={false}
       >
         <div className="relative flex flex-col w-full h-full">
           {/* Close Button positioned at the far right, same line as heading */}
-          <DialogClose className="absolute top-12 right-12 md:right-20 z-50 text-[#10182880] dark:text-[#A1A1A1] hover:text-[#101828] dark:hover:text-white transition-colors">
+          <DialogClose className="absolute top-8 right-6 md:top-12 md:right-20 z-50 text-[#10182880] dark:text-[#A1A1A1] hover:text-[#101828] dark:hover:text-white transition-colors">
             <XIcon size={24} />
           </DialogClose>
-          <DialogHeader className="flex flex-col gap-3 pt-12 pl-16 md:pl-24 pr-24 md:pr-32 text-left sm:text-left">
-            <DialogTitle className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold text-[32px] leading-tight">
+          <DialogHeader className="flex flex-col gap-3 pt-8 pl-6 pr-12 md:pt-12 md:pl-24 md:pr-32 text-left sm:text-left">
+            <DialogTitle className="bg-gradient-to-l from-[#22E9AD] to-[#9846FE] bg-clip-text text-transparent font-semibold text-[22px] md:text-[32px] leading-tight">
               {hasDaos
                 ? `We Found ${count} DAO${count > 1 ? "s" : ""} associated with your wallet.`
                 : "No DAOs Found"}
             </DialogTitle>
-            <DialogDescription className="font-normal text-[#10182880] dark:text-[#A1A1A1] text-[20px] leading-relaxed">
+            <DialogDescription className="font-normal text-[#10182880] dark:text-[#A1A1A1] text-[14px] md:text-[20px] leading-relaxed">
               {hasDaos ? (
                 <>
                   {count > 1 ? "These" : "This"} DAO{count > 1 ? "s" : ""} will be automatically added to your{" "}
@@ -78,10 +78,10 @@ export default function DaosFoundModal() {
             </DialogDescription>
           </DialogHeader>
 
-          {/* End-to-end thin line 20px after description */}
+          {/* End-to-end thin line after description */}
           <div className="w-full border-t border-[#E7E7E7] dark:border-[#1A1A1A] mt-5" />
 
-          <section className="flex-1 flex flex-col items-center px-16 md:px-24 py-2 w-full gap-1 overflow-y-auto max-h-[500px]">
+          <section className="flex-1 flex flex-col items-center px-6 md:px-24 py-2 w-full gap-1 overflow-y-auto max-h-[280px] md:max-h-[320px] scrollbar-thin scrollbar-thumb-[#E7E7E7] dark:scrollbar-thumb-[#333] scrollbar-track-transparent">
             {hasDaos && finalDaosData.result.map((dao: DaoItem, index: number) => {
               // Priority: Symbol from metadata (if valid) > Realm Name (if valid)
               const symbol = dao.tokenMetadata?.symbol;
@@ -95,19 +95,19 @@ export default function DaosFoundModal() {
               return (
                 <div
                   key={index}
-                  className="flex justify-between items-center w-full pt-6 pb-2 border-b border-[#E7E7E7] dark:border-[#1A1A1A] last:border-0"
+                  className="flex justify-between items-center w-full pt-4 pb-2 md:pt-6 border-b border-[#E7E7E7] dark:border-[#1A1A1A] last:border-0"
                 >
-                  <div className="flex items-center gap-[20px] pb-2">
-                    <div className="relative w-[48px] h-[48px] flex-shrink-0 bg-[#F9F9F9] dark:bg-[#1A1A1A] rounded-full overflow-hidden">
+                  <div className="flex items-center gap-3 md:gap-[20px] pb-2">
+                    <div className="relative w-10 h-10 md:w-[48px] md:h-[48px] flex-shrink-0 bg-[#F9F9F9] dark:bg-[#1A1A1A] rounded-full overflow-hidden">
                       <DaoImage src={dao.imageUrl || ""} alt={dao.realmName || ""} />
                     </div>
-                    <h2 className="text-[20px] font-semibold text-[#101828] dark:text-white">
+                    <h2 className="text-[16px] md:text-[20px] font-semibold text-[#101828] dark:text-white">
                       {dao.realmName}
                     </h2>
                   </div>
 
                   <span
-                    className="text-[14px] font-medium pb-2"
+                    className="text-[12px] md:text-[14px] font-medium pb-2"
                     style={{
                       background: 'linear-gradient(270deg, #22E9AD 0%, #9846FE 100%)',
                       WebkitBackgroundClip: 'text',
@@ -128,9 +128,9 @@ export default function DaosFoundModal() {
             )}
           </section>
 
-          <div className="flex justify-center pt-2">
+          <div className="flex justify-center pt-2 px-6 md:px-0">
             <Button
-              className="w-auto py-[29px] px-10 rounded-[5px] bg-[#010101] dark:bg-white text-white dark:text-[#010101] hover:opacity-90 transition-all font-medium text-lg"
+              className="w-full md:w-auto py-5 md:py-[29px] px-10 rounded-[5px] bg-[#010101] dark:bg-white text-white dark:text-[#010101] hover:opacity-90 transition-all font-medium text-base md:text-lg"
               onClick={handleGoToDashboard}
             >
               Go to Dashboard

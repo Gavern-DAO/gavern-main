@@ -21,7 +21,11 @@ interface MainnetDao {
     ogImage: string;
 }
 
-export default function DaoSearch() {
+interface DaoSearchProps {
+    mobile?: boolean;
+}
+
+export default function DaoSearch({ mobile = false }: DaoSearchProps) {
     const [query, setQuery] = useState("");
     const [showResults, setShowResults] = useState(false);
     const [lastSearchedQuery, setLastSearchedQuery] = useState("");
@@ -91,13 +95,13 @@ export default function DaoSearch() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const isSuccessful = query.trim() !== "" && query === lastSearchedQuery;
-
     return (
         <div className="relative w-full md:w-auto" ref={containerRef}>
             <Label className={cn(
-                "hidden md:flex items-center gap-2 relative bg-transparent rounded-[8px] px-3 h-10 min-w-[353px] lg:min-w-[450px] transition-all duration-300",
-                "focus-within:bg-[#F5F5F5] dark:focus-within:bg-[#0D0D0D] focus-within:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)]"
+                "flex items-center gap-2 relative rounded-[8px] px-3 transition-all duration-300",
+                mobile
+                    ? "md:hidden bg-[#F7F7F7] dark:bg-[#171717] max-w-[95%] mx-auto py-2 h-auto"
+                    : "hidden md:flex bg-transparent h-10 min-w-[353px] lg:min-w-[450px] focus-within:bg-[#F5F5F5] dark:focus-within:bg-[#0D0D0D] focus-within:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)]"
             )}>
 
                 <CiSearch color="#909090" className="text-xl shrink-0" />
@@ -105,20 +109,23 @@ export default function DaoSearch() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => query.trim() && setShowResults(true)}
-
-                    className="bg-transparent border-none outline-none shadow-none focus:outline-none focus:ring-0 px-0 dark:px-3 focus-visible:outline-0 focus-visible:ring-0 flex-1 placeholder:text-[#909090] text-base leading-[24px] font-normal dark:bg-transparent pr-[85px]"
+                    className={cn(
+                        "bg-transparent border-none outline-none shadow-none focus:outline-none focus:ring-0 px-0 dark:px-3 focus-visible:outline-0 focus-visible:ring-0 flex-1 placeholder:text-[#909090] text-base leading-[24px] font-normal dark:bg-transparent",
+                        query.trim() ? "pr-[85px]" : ""
+                    )}
                     placeholder="Search for a DAO"
                 />
                 {query.trim() && (
                     <Button
                         variant="default"
-                        onClick={isSuccessful ? handleClear : () => setLastSearchedQuery(query)}
+                        onClick={handleClear}
                         className={cn(
                             "absolute right-1 h-[32px] px-4 rounded-[10px] text-[14px] font-medium transition-all z-10",
+                            mobile ? "right-[3%]" : "",
                             "bg-[#010101] text-white hover:bg-[#010101]/90 dark:bg-white dark:text-[#010101] dark:hover:bg-white/90"
                         )}
                     >
-                        {isSuccessful ? "Clear" : "Search"}
+                        Clear
                     </Button>
                 )}
             </Label>

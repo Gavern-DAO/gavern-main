@@ -41,7 +41,7 @@ const DaoCard: React.FC<DaoCardProps> = ({
       className="bg-white dark:bg-[#0A0A0A] border border-[#E5E5E5] dark:border-[#282828] p-4 cursor-pointer transition-all hover:shadow-md rounded-[10px] flex flex-col gap-4.5"
     >
       <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           {showSelect && (
             <div
               data-checkbox-container
